@@ -4,6 +4,7 @@
 
     def self.quit
         puts "QUITTING ..."
+        exit(true)
     end
 
     def self.login_signup
