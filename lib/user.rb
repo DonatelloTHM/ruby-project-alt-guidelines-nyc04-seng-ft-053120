@@ -10,8 +10,10 @@ class User < ActiveRecord::Base
         puts"           Choose your window?            "
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
-            w.choice "          Requester", -> {user.requester_menu}     #waiting for tracy to name it...
-            w.choice "          Log Out".cyan, -> {Interface.login_signup} #0
+            w.choice "          Requester", -> {user.requester_menu}
+            w.choice "          Log Out".cyan, -> {Interface.login_signup}
+            w.choice "          Log In".cyan, -> {Interface.login}
+            w.choice "          Sign Up".cyan, -> {Interface.signup}
             w.choice "          Quit".red, -> {Interface.quit}  #1
         end
         return nil
@@ -27,7 +29,7 @@ class User < ActiveRecord::Base
     end
 
     def find_transaction_by_item_name(item_name)
-        transactions=Transaction.where(user_id: self.id).take
+        transactions = Transaction.where(user_id: self.id).take
     end
 
     def requester_menu
