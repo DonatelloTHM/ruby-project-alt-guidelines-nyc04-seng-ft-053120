@@ -29,6 +29,18 @@ class User < ActiveRecord::Base
         tp transactions
     end
 
+    def cancel_request
+        transactions = Transaction.where(user_id: self.id, status:"Requested")
+        tp transactions
+        binding.pry
+    end
+
+    def update_request
+        transactions = Transaction.where(user_id: self.id, status:"Requested")
+        tp transactions
+        binding.pry
+    end
+
     def view_requests
         transactions = Transaction.where(user_id: self.id, status:"Requested")
         tp transactions
