@@ -115,7 +115,7 @@ class Item < ActiveRecord::Base
         user.donator_menu
     end
 
-    def self.succesful_request(user)
+    def self.succesful_request(transaction)
         system('clear')
         puts"           
                     ░█▀█▀█ █── ▄▀▄ █▄─█ █─▄▀──
@@ -127,11 +127,11 @@ class Item < ActiveRecord::Base
                     ────░█──── ─▀─ ─▀───
         "
         puts""
-        puts @@ascii.asciify(user.name).colorize(:cyan)
+        puts @@ascii.asciify(transaction.user.name).colorize(:cyan)
         puts""
         puts"           Your request was succesful.            ".colorize(:background=>:blue)
         sleep(5)
-        User.user_menu(user)
+        User.user_menu(transaction.user)
     end
 
     # validates that the input is correct
@@ -222,7 +222,7 @@ class Item < ActiveRecord::Base
             # if user wants existing item(s), have user confirm and accept donation
         end
 
-        self.succesful_request(user)
+        self.succesful_request(transaction)
 
     end
 end

@@ -11,10 +11,7 @@ class User < ActiveRecord::Base
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
             w.choice "          Requester", -> {user.requester_menu}
-            # w.choice "          Log Out".cyan, -> {Interface.login_signup}
-            # w.choice "          Log In".cyan, -> {Interface.login}
-            # w.choice "          Sign Up".cyan, -> {Interface.signup}
-            # w.choice "          Quit".red, -> {Interface.quit}  #1
+            w.choice "          Quit".red, -> {Interface.quit}
         end
         # return nil
     end
@@ -27,29 +24,32 @@ class User < ActiveRecord::Base
     def list_transactions
         transactions = Transaction.where(user_id: self.id)
         tp transactions
+        return transactions
     end
 
     def cancel_request
         transactions = Transaction.where(user_id: self.id, status:"Requested")
         tp transactions
-        binding.pry
+        transaction = 
+        User.user_menu(self)
     end
 
     def update_request
         transactions = Transaction.where(user_id: self.id, status:"Requested")
         tp transactions
-        binding.pry
+        User.user_menu(self)
     end
 
     def view_requests
         transactions = Transaction.where(user_id: self.id, status:"Requested")
         tp transactions
-        binding.pry
+        User.user_menu(self)
     end
 
     def find_transaction_by_item_name(item_name)
         transaction = Transaction.where(user_id: self.id).take
         transaction.display
+        return transaction
     end
 
     def requester_menu
