@@ -10,28 +10,30 @@ def self.add_item(user)
     puts""
     similar_array=self.where("name like ?", "%#{name}%")   #returns an array with instances of the item that have a similar name
     
-    if(!similar_array.empty?)
-    self.render_table(similar_array)
-    item_on_the_list=@@prompt.select("   Is your item anywhere on this list?  ".colorize(:background=>:blue), ["Yes","No"])
-    puts""
-        if(item_on_the_list=="Yes")
-            list_number=0
-            loop do
-                list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{similar_array.length}  ".colorize(:background=>:blue)).to_i
-                break if list_number.between?(1, similar_array.length)
-                puts "Wrong input , your input should be between 1-#{similar_array.length}".colorize(:red)
-                puts""
-            end
-            
-            
+        if(!similar_array.empty?)
+            self.render_table(similar_array)
+            item_on_the_list=@@prompt.select("   Is your item anywhere on this list?  ".colorize(:background=>:blue), ["Yes","No"])
+            puts""
+
+            if(item_on_the_list=="Yes")
+                list_number=0
+                loop do
+                    list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{similar_array.length}  ".colorize(:background=>:blue)).to_i
+                    break if list_number.between?(1, similar_array.length)
+                    puts "Wrong input , your input should be between 1-#{similar_array.length}".colorize(:red)
+                    puts""
+                end
+
             new_quantity=self.check_quantity
             update_quantity=similar_array[list_number-1]
             update_quantity.quantity += new_quantity
              self.item_table(update_quantity,new_quantity)
+             binding.pry
             update_quantity.save
             Transaction.create(user_id:user.id,status:"Donated",item_id:update_quantity.id,quantity:new_quantity)
             self.succesful_donation(user)
-        else
+
+            else
             puts""
             check_name=@@prompt.select("   Is '#{name}' the name of the item that you wanted to add?  ".colorize(:background=>:blue), ["Yes","No"])
             if(check_name=="No")
