@@ -3,7 +3,7 @@ class Transaction < ActiveRecord::Base
     belongs_to :item
 
     def display
-        pp self
+        tp self
     end
 
 end

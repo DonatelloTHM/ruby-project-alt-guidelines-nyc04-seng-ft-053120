@@ -11,25 +11,33 @@ class User < ActiveRecord::Base
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
             w.choice "          Requester", -> {user.requester_menu}
-            w.choice "          Log Out".cyan, -> {Interface.login_signup}
-            w.choice "          Log In".cyan, -> {Interface.login}
-            w.choice "          Sign Up".cyan, -> {Interface.signup}
-            w.choice "          Quit".red, -> {Interface.quit}  #1
+            # w.choice "          Log Out".cyan, -> {Interface.login_signup}
+            # w.choice "          Log In".cyan, -> {Interface.login}
+            # w.choice "          Sign Up".cyan, -> {Interface.signup}
+            # w.choice "          Quit".red, -> {Interface.quit}  #1
         end
-        return nil
+        # return nil
     end
 
+    # display using table_print
+    def display
+        tp self
+    end
+    
     def list_transactions
         transactions = Transaction.where(user_id: self.id)
+        tp transactions
     end
 
     def view_requests
         transactions = Transaction.where(user_id: self.id, status:"Requested")
+        tp transactions
         binding.pry
     end
 
     def find_transaction_by_item_name(item_name)
-        transactions = Transaction.where(user_id: self.id).take
+        transaction = Transaction.where(user_id: self.id).take
+        transaction.display
     end
 
     def requester_menu
@@ -47,7 +55,6 @@ class User < ActiveRecord::Base
         end
         return nil
     end
-
 
     def donator_menu
         system("clear")
