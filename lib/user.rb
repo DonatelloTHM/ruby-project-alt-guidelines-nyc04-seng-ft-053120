@@ -95,7 +95,7 @@ class User < ActiveRecord::Base
         self.render_item_correct(transactions[list_number-1])
         
         puts""
-        check_if_correct=@@prompt.select("   Is this the item that you wanted to delete?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't delete anything"])
+        check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't cancel anything"])
         if(check_if_correct=="No, change it.")
             self.cancel_donation
         elsif(check_if_correct=="Don't delete anything")
