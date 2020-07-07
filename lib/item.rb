@@ -3,36 +3,8 @@ class Item < ActiveRecord::Base
     has_many :users, through: :transactions
     @@prompt=TTY::Prompt.new
 
-    # prompt user for Item attributes, returns hash of attributes
-    def describe()
-        # item = self.new
-        self.name = @@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue))
-        puts""
-        self.category = @@prompt.select("         Choose the category?           ".colorize(:background=>:blue), ["Health","Tools","Electronics","Clothing"])
-        puts""
-        self.description = @@prompt.ask("        Write a short description       ".colorize(:background=>:blue))
-        puts""
-        quantity = @@prompt.ask("          What's the quantity?          ".colorize(:background=>:blue)).to_i
-        
-        loop do
-            if(quantity>0)
-                break
-            else
-                puts""
-                puts "          Wrong input, only numbers above zero are accepted".red
-                puts "                              TRY AGAIN"
-                puts""
-                quantity = @@prompt.ask("          What's the quantity?          ".colorize(:background=>:blue)).to_i
-            end
-            break if quantity>0
-        end
-
-        self.quantity = quantity
-        # return item
-    end
-
     # display item (table?); using pp for now
-    def display()
+    def display
         tp self
     end
 
