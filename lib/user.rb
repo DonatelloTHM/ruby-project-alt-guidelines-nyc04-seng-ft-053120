@@ -88,24 +88,56 @@ class User < ActiveRecord::Base
         transactions=self.transactions.where(status:"Donated")
         system("clear")
         puts""
-        binding.pry
-        "           Which item you want to cancel           ".colorize(:background=>:blue)
+        puts"           Which item you want to cancel           ".colorize(:background=>:blue)
+        self.render_table(transactions)
+        puts""
+        list_number=self.list_number_validation(transactions)
+        self.render_item_correct(transactions[list_number-1])
         
+        puts""
+        check_if_correct=@@prompt.select("   Is this the item that you wanted to delete?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't delete anything"])
+        if(check_if_correct=="No, change it.")
+            self.cancel_donation
+        elsif(check_if_correct=="Don't delete anything")
+            self.donator_menu
+        end
+        Transaction.destroy(transactions[list_number-1].id)
+        binding.pry
     end
 
 
     def render_table(transactions)
+
+            table_array=[]
+            i=1
+            transactions.each do |transaction|
+                table_array<<[" #{i} ".colorize(:light_blue),transaction.item.name,transaction.item.category,transaction.created_at.to_s[0..9]]
+                i+=1 
+            end
+            table = TTY::Table.new [ 'List No.','ITEM NAME'.colorize(:color => :green), 'Category','Date Added'], table_array
+            puts""
+            puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:80, padding: [0,1,0,1],resize: true)
+            puts""   
+    end
+
+    def render_item_correct(transaction)
         system("clear")
-        table_array=[]
-        i=1
-        similar_array.each do |items|
-            table_array<<[" #{i} ".colorize(:light_blue),transactions.name.colorize(:light_red),items.category,items.description]
-            i+=1
-        end
-        table = TTY::Table.new [ 'List No.','ITEM NAME'.colorize(:color => :green), 'Category','Date Added'], table_array
-        puts""
-        puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:90, padding: [0,1,0,1],resize: true)
-        puts""
+
+            table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category','Quantity','Date Added'], [[transaction.item.name.colorize(:red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]]
+            puts""
+            puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:90, padding: [0,1,0,1],resize: true)
+            puts""
+    end
+
+    def list_number_validation(transactions)
+        list_number=0
+            loop do
+                list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{transactions.length}  ".colorize(:background=>:blue)).to_i
+                break if list_number.between?(1, transactions.length)
+                puts "Wrong input , your input should be between 1-#{transactions.length}".colorize(:red)
+                puts""
+            end
+        list_number
     end
 
 end    
