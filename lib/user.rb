@@ -10,9 +10,25 @@ class User < ActiveRecord::Base
         puts"           Choose your window?            "
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
-            w.choice "          Requester", ->{}     #waiting for tracy to name it...
+            w.choice "          Requester", ->{user.requester_menu}     #waiting for tracy to name it...
             w.choice "          Log Out".cyan, ->{Interface.login_signup} #0
             w.choice "          Quit".red, -> {Interface.quit}  #1
+        end
+        return nil
+    end
+
+    def requester_menu
+        system("clear")
+        puts""
+        puts "          Requester's Main Menu          "
+        @@prompt.select("",active_color: :green) do |m|
+            m.enum "."
+            m.choice "          Make a Request", -> {Item.add_item(self)}  #2
+            m.choice "          Cancel a Request", -> {self.cancel_request} #3
+            m.choice "          Modify a Request", -> {self.update_request}#4
+            m.choice "          View all my Requests", -> {self.view_requests}
+            m.choice "          Previous menu",-> {self.class.user_menu(self)}
+            m.choice "          Quit".red, ->{Interface.quit}
         end
         return nil
     end
