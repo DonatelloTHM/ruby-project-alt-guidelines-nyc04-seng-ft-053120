@@ -28,20 +28,20 @@ class User < ActiveRecord::Base
     end
 
     def cancel_request
-        transactions = Transaction.where(user_id: self.id, status:"Requested")
+        transactions = Transaction.where(user_id: self.id, status:"New",kind:"Request")
         tp transactions
         transaction = 
         User.user_menu(self)
     end
 
     def update_request
-        transactions = Transaction.where(user_id: self.id, status:"Requested")
+        transactions = Transaction.where(user_id: self.id, status:"New",kind:"Request")
         tp transactions
         User.user_menu(self)
     end
 
     def view_requests
-        transactions = Transaction.where(user_id: self.id, status:"Requested")
+        transactions = Transaction.where(user_id: self.id, status:"New",kind:"Request")
         tp transactions
         User.user_menu(self)
     end
@@ -85,7 +85,7 @@ class User < ActiveRecord::Base
     end
 
     def cancel_donation
-        transactions=self.transactions.where(status:"Donated")
+        transactions=self.transactions.where(status:"Added",kind:"Donation")
         system("clear")
         puts""
         puts"           Which item you want to cancel           ".colorize(:background=>:blue)
@@ -98,11 +98,12 @@ class User < ActiveRecord::Base
         check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't cancel anything"])
         if(check_if_correct=="No, change it.")
             self.cancel_donation
-        elsif(check_if_correct=="Don't delete anything")
+        elsif(check_if_correct=="Don't cancel anything")
             self.donator_menu
         end
-        Transaction.destroy(transactions[list_number-1].id)
-        binding.pry
+        cancel_item=Transaction.find(transactions[list_number-1].id)
+        cancel_item.status="Canceled"
+        cancel_item.save
     end
 
 

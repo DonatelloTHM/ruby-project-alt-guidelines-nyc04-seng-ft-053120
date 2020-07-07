@@ -3,7 +3,7 @@ class Item < ActiveRecord::Base
     has_many :users, through: :transactions
     
     @@prompt=TTY::Prompt.new
-    @@ascii=Artii::Base.new :font => 'roman'
+    @@ascii=Artii::Base.new :font => 'slant'
 
     def self.add_item(user)
         puts""
@@ -31,7 +31,7 @@ class Item < ActiveRecord::Base
                 self.item_table(update_quantity,new_quantity)
                 self.check_if_correct(user)
                 update_quantity.save
-                Transaction.create(user_id:user.id,status:"Donated",item_id:update_quantity.id,quantity:new_quantity)
+                Transaction.create(user_id:user.id,status:"Added",item_id:update_quantity.id,quantity:new_quantity,kind:"Donation")
                 self.succesful_donation(user)
 
                 else
@@ -52,7 +52,7 @@ class Item < ActiveRecord::Base
         self.item_table(item)
         self.check_if_correct(user)
         item.save
-        Transaction.create(user_id:user.id,status:"Donated",item_id:item.id,quantity:item.quantity)
+        Transaction.create(user_id:user.id,status:"Added",item_id:item.id,quantity:item.quantity,kind:"Donation")
         self.succesful_donation(user)
     end
     
@@ -127,11 +127,11 @@ class Item < ActiveRecord::Base
                     ────░█──── ─▀─ ─▀───
         "
         puts""
-        puts @@ascii.asciify(transaction.user.name).colorize(:cyan)
+        puts @@ascii.asciify(user.name).colorize(:cyan)
         puts""
         puts"           Your request was succesful.            ".colorize(:background=>:blue)
         sleep(5)
-        User.user_menu(user)
+        user.requester_menu
     end
 
     # validates that the input is correct
@@ -161,7 +161,7 @@ class Item < ActiveRecord::Base
     end
 
     # prompt user for Item attributes, returns hash of attributes
-    def self.prompt_attributes()
+    def self.prompt_attributes
         prompt_attributes = Hash.new
 
         prompt_attributes[:name] = @@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue))
@@ -192,11 +192,11 @@ class Item < ActiveRecord::Base
     def self.request_item(user)
 
         # prompt user for item attributes
-        prompt_attributes = Item.prompt_attributes()
+        prompt_attributes = self.prompt_attributes
 
         # return item if found with name & category match, otherwise create new item
         item = Item.find_or_initialize_by(name: prompt_attributes[:name], category: prompt_attributes[:category])
-
+        
         if item.id == nil
             # item not found; creating new item
             puts "Creating Request"
@@ -205,7 +205,8 @@ class Item < ActiveRecord::Base
             item.save
             transaction = Transaction.create(
                 user_id: user.id,
-                status: "Requested",
+                status: "New",
+                kind:"Request",
                 item_id: item.id,
                 quantity: item.quantity
             )
