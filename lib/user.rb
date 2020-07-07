@@ -30,20 +30,19 @@ class User < ActiveRecord::Base
     def cancel_request
         transactions = Transaction.where(user_id: self.id, status:"Requested")
         tp transactions
-        transaction = 
-        User.user_menu(self)
+        # User.user_menu(self)
     end
 
     def update_request
         transactions = Transaction.where(user_id: self.id, status:"Requested")
         tp transactions
-        User.user_menu(self)
+        # User.user_menu(self)
     end
 
     def view_requests
         transactions = Transaction.where(user_id: self.id, status:"Requested")
         tp transactions
-        User.user_menu(self)
+        # User.user_menu(self)
     end
 
     def find_transaction_by_item_name(item_name)

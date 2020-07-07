@@ -25,23 +25,24 @@ class Item < ActiveRecord::Base
                         puts""
                     end
 
-                new_quantity=self.check_quantity
-                update_quantity=similar_array[list_number-1]
-                update_quantity.quantity += new_quantity
-                self.item_table(update_quantity,new_quantity)
-                self.check_if_correct(user)
-                update_quantity.save
-                Transaction.create(user_id:user.id,status:"Donated",item_id:update_quantity.id,quantity:new_quantity)
-                self.succesful_donation(user)
+                    new_quantity=self.check_quantity
+                    update_quantity=similar_array[list_number-1]
+                    update_quantity.quantity += new_quantity
+                    self.item_table(update_quantity,new_quantity)
+                    self.check_if_correct(user)
+                    update_quantity.save
+                    Transaction.create(user_id:user.id,status:"Donated",item_id:update_quantity.id,quantity:new_quantity)
+                    self.succesful_donation(user)
 
                 else
-                puts""
-                check_name=@@prompt.select("   Is '#{name}' the name of the item that you wanted to add?  ".colorize(:background=>:blue), ["Yes","No"])
-                if(check_name=="No")
-                    name=@@prompt.ask("      What's the new name?     ".colorize(:background=>:blue)).downcase
+                    puts""
+                    check_name=@@prompt.select("   Is '#{name}' the name of the item that you wanted to add?  ".colorize(:background=>:blue), ["Yes","No"])
+                    if(check_name=="No")
+                        name=@@prompt.ask("      What's the new name?     ".colorize(:background=>:blue)).downcase
+                    end
                 end
             end
-        end
+        # end
         item=self.new
         item.name=name
         puts""
@@ -78,7 +79,6 @@ class Item < ActiveRecord::Base
         
     end
 
-
     #helper method to render the tables for a specific transaction
     def self.item_table(item_array,quantity=nil)
         system("clear")
@@ -108,7 +108,7 @@ class Item < ActiveRecord::Base
                     ────░█──── ─▀─ ─▀───
         "
         puts""
-        puts @@ascii.asciify(user.name).colorize(:cyan)
+        # puts @@ascii.asciify(user.name).colorize(:cyan)
         puts""
         puts"           Your donation was succesful.            ".colorize(:background=>:blue)
         sleep(5)
@@ -127,9 +127,10 @@ class Item < ActiveRecord::Base
                     ────░█──── ─▀─ ─▀───
         "
         puts""
-        puts @@ascii.asciify(transaction.user.name).colorize(:cyan)
+        puts @@ascii.asciify(user.name).colorize(:cyan)
         puts""
         puts"           Your request was succesful.            ".colorize(:background=>:blue)
+        # user.list_transactions
         sleep(5)
         User.user_menu(user)
     end
