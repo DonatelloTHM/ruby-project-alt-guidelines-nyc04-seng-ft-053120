@@ -1,5 +1,5 @@
 require_relative '../config/environment'
-user=User.find(47)
+user=User.find(67)
 User.user_menu(user)
 
 def animation
@@ -908,7 +908,7 @@ puts"                ██████   ██████  ███   
 sleep(0.2)
 puts"                ██   ██ ██    ██ ████   ██ ██   ██    ██    ██                     ........"
 sleep(0.2)
-puts"          ██ ██ ██   ██ ██    ██ ██ ██  ██ ███████    ██    █████ ██ ██        ........".colorize(:light_green)
+puts"          ██ ██ ██   ██ ██    ██ ██ ██  ██ ███████    ██    █████ ██ ██ ".green.blink
 sleep(0.2)
 puts"                ██   ██ ██    ██ ██  ██ ██ ██   ██    ██    ██                     ........"
 sleep(0.2)

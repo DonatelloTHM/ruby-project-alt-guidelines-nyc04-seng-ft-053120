@@ -1,4 +1,6 @@
 User.destroy_all
+Item.destroy_all
+Transaction.destroy_all
 
 20.times do
     User.create(
