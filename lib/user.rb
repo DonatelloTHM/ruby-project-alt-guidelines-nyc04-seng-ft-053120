@@ -17,6 +17,11 @@ class User < ActiveRecord::Base
         return nil
     end
 
+    # display using table_print
+    def display()
+        tp self
+    end
+    
     def list_transactions
         transactions = Transaction.where(user_id: self.id)
     end

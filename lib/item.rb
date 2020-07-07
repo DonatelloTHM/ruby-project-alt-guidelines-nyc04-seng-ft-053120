@@ -33,7 +33,7 @@ class Item < ActiveRecord::Base
 
     # display item (table?); using pp for now
     def display()
-        pp self
+        tp self
     end
 
     # prompt user for Item attributes, returns hash of attributes
