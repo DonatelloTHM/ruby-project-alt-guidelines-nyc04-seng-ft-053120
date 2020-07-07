@@ -16,7 +16,7 @@ class User < ActiveRecord::Base
             w.choice "          Sign Up".cyan, -> {Interface.signup}
             w.choice "          Quit".red, -> {Interface.quit}  #1
         end
-        return nil
+        # return nil
     end
 
     def list_transactions
