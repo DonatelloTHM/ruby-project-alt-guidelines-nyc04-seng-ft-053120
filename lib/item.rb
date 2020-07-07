@@ -109,6 +109,7 @@ end
 def self.check_quantity
     quantity=0
     loop do
+        puts ""
         quantity=@@prompt.ask("          What's the quantity?          ".colorize(:background=>:blue)).to_i
                 break if quantity>0
                 puts""
