@@ -19,17 +19,25 @@ class User < ActiveRecord::Base
         # return nil
     end
 
+    # display using table_print
+    def display
+        tp self
+    end
+    
     def list_transactions
         transactions = Transaction.where(user_id: self.id)
+        tp transactions
     end
 
     def view_requests
         transactions = Transaction.where(user_id: self.id, status:"Requested")
+        tp transactions
         binding.pry
     end
 
     def find_transaction_by_item_name(item_name)
-        transactions = Transaction.where(user_id: self.id).take
+        transaction = Transaction.where(user_id: self.id).take
+        transaction.display
     end
 
     def requester_menu
@@ -48,7 +56,6 @@ class User < ActiveRecord::Base
         return nil
     end
 
-
     def donator_menu
         system("clear")
         puts""
@@ -66,10 +73,11 @@ class User < ActiveRecord::Base
     end
 
     def cancel_donation
-        binding.pry
-        transactions=Transaction.where(user_id:self.id,status:"Donated")
+        transactions = Transaction.where(user_id:self.id, status:"Donated")
+        tp transactions
         puts""
         "           Which item you want to cancel           ".colorize(:background=>:blue)
+        binding.pry
     end
 
 end

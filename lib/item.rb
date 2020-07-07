@@ -54,6 +54,11 @@ class Item < ActiveRecord::Base
         Transaction.create(user_id:user.id,status:"Donated",item_id:item.id,quantity:item.quantity)
         self.succesful_donation(user)
     end
+    
+    # display item (table?); using pp for now
+    def display
+        tp self
+    end
 
     #helper method to render tables for the similar items
     def self.render_table(similar_array)

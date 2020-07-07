@@ -16,9 +16,7 @@
             w.choice "          Sign Up".cyan, -> {signup}
             w.choice "          Quit".red, -> {quit}  #1
         end
-
-        # binding.pry
-
+        
         # user == nil means login failed
         # what should value be if "Quit" selected?
         return user
@@ -78,42 +76,6 @@
         return new_attribute
     end
 
-    # def self.get_valid_password
-    #     new_password = nil
-    #     while (!new_password) do
-    #         new_password = @@prompt.ask("password?") do |q|
-    #             # placeholder validation for now
-    #             q.validate { |input| input.length >= 6 }
-    #         end    
-    #     end
-    #     binding.pry
-    #     return new_password
-    # end
-
-    # def self.get_valid_name
-    #     new_name = nil
-    #     while (!new_name) do
-    #         new_name = @@prompt.ask("name?") do |q|
-    #             # placeholder validation for now
-    #             q.validate { |input| input.length >= 6 }
-    #         end    
-    #     end
-    #     binding.pry
-    #     return new_name
-    # end
-
-    # def self.get_valid_address
-    #     new_address = nil
-    #     while (!new_address) do
-    #         new_address = @@prompt.ask("address?") do |q|
-    #             # placeholder validation for now
-    #             q.validate { |input| input.length >= 6 }
-    #         end    
-    #     end
-    #     binding.pry
-    #     return new_address
-    # end
-
     def self.signup
         new_user = User.new
         puts "SIGN UP"
@@ -126,13 +88,6 @@
         return new_user
     end
 
-    # create_table "users", force: :cascade do |t|
-    #     t.string "username"
-    #     t.string "password"
-    #     t.string "name"
-    #     t.string "address"
-    #   end
-    
     def self.login
 
         puts "LOGIN"
