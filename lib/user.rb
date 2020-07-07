@@ -11,10 +11,10 @@ class User < ActiveRecord::Base
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
             w.choice "          Requester", -> {user.requester_menu}
-            w.choice "          Log Out".cyan, -> {Interface.login_signup}
-            w.choice "          Log In".cyan, -> {Interface.login}
-            w.choice "          Sign Up".cyan, -> {Interface.signup}
-            w.choice "          Quit".red, -> {Interface.quit}  #1
+            # w.choice "          Log Out".cyan, -> {Interface.login_signup}
+            # w.choice "          Log In".cyan, -> {Interface.login}
+            # w.choice "          Sign Up".cyan, -> {Interface.signup}
+            # w.choice "          Quit".red, -> {Interface.quit}  #1
         end
         # return nil
     end

@@ -4,7 +4,6 @@
 
     def self.quit
         puts "QUITTING ..."
-        binding.pry
     end
 
     def self.login_signup
@@ -16,7 +15,7 @@
             w.choice "          Sign Up".cyan, -> {signup}
             w.choice "          Quit".red, -> {quit}  #1
         end
-        
+
         # user == nil means login failed
         # what should value be if "Quit" selected?
         return user
@@ -42,21 +41,15 @@
                         q.validate { |input| input.length >= 3 }
                     end
 
-                    binding.pry
-
                     user = User.find_by_username(new_attribute)
                     
                     if user
                         puts "!!! USERNAME #{new_attribute} NOT AVAILABLE ... TRY AGAIN"
-                        binding.pry
                     else
                         username_available= true
                         puts "USERNAME #{new_attribute} AVAILABLE"
-                        binding.pry
                     end
                 end
-
-                binding.pry
         
             when "name"
                 new_attribute = @@prompt.ask("#{attribute}?") do |q|
@@ -72,7 +65,6 @@
                 puts "??? UNKNOWN USER ATTRIBUTE: #{attribute}"
             end
         end
-        binding.pry
         return new_attribute
     end
 
@@ -83,7 +75,6 @@
         new_user.password = Interface.get_valid_user_attribute("password")
         new_user.name = Interface.get_valid_user_attribute("name")
         new_user.address = Interface.get_valid_user_attribute("address")
-        binding.pry
         new_user.save
         return new_user
     end
