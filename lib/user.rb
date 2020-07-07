@@ -66,10 +66,27 @@ class User < ActiveRecord::Base
     end
 
     def cancel_donation
-        binding.pry
-        transactions=Transaction.where(user_id:self.id,status:"Donated")
+        transactions=self.transactions.where(status:"Donated")
+        system("clear")
         puts""
+        binding.pry
         "           Which item you want to cancel           ".colorize(:background=>:blue)
+        
     end
 
-end
+
+    def render_table(transactions)
+        system("clear")
+        table_array=[]
+        i=1
+        similar_array.each do |items|
+            table_array<<[" #{i} ".colorize(:light_blue),transactions.name.colorize(:light_red),items.category,items.description]
+            i+=1
+        end
+        table = TTY::Table.new [ 'List No.','ITEM NAME'.colorize(:color => :green), 'Category','Date Added'], table_array
+        puts""
+        puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:90, padding: [0,1,0,1],resize: true)
+        puts""
+    end
+
+end    
