@@ -3,10 +3,10 @@ class Transaction < ActiveRecord::Base
     belongs_to :item
 
     def display
-        render_table([self])
+        Transaction.render_table([self])
     end
 
-    def render_table(transaction_array)
+    def self.render_table(transaction_array)
 
         table_array=[]
         i=1
