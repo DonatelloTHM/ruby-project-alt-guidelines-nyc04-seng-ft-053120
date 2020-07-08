@@ -8,7 +8,7 @@ class Item < ActiveRecord::Base
     def self.add_item(user)
         puts""
         Interface.donator_logo
-        name=@@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue)).downcase
+        name=@@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue),required: true).downcase
         puts""
 
         get_donated_transactions=Transaction.where(kind:"Donation")
@@ -45,9 +45,7 @@ class Item < ActiveRecord::Base
             else
                 check_name=@@prompt.select("   Is '#{name}' the name of the item that you wanted to add?  ".colorize(:background=>:blue), ["Yes","No"])
                 if(check_name=="No")
-                    puts""
-                    name=@@prompt.ask("      What's the new name?     ".colorize(:background=>:blue)).downcase
-                    puts""
+                    self.add_item(user)
                 end
             end
         end
@@ -55,9 +53,9 @@ class Item < ActiveRecord::Base
         # end
         item=self.new
         item.name=name
-        item.category=@@prompt.select("         Choose the category?           ".colorize(:background=>:blue), ["Health","Tools","Electronics","Clothing"])
+        item.category=@@prompt.select("         Choose the category?           ".colorize(:background=>:cyan), ["Health","Tools","Electronics","Clothing"])
         puts""
-        item.description=@@prompt.ask("        Write a short description       ".colorize(:background=>:blue))
+        item.description=@@prompt.ask("        Write a short description       ".colorize(:background=>:blue),required: true)
         item.quantity=self.check_quantity
         self.item_table(item)
         self.check_if_correct(user)
@@ -117,7 +115,7 @@ class Item < ActiveRecord::Base
                     ────░█──── ─▀─ ─▀───
         "
         puts""
-        # puts @@ascii.asciify(user.name).colorize(:cyan)
+        puts @@ascii.asciify(user.name).colorize(:cyan)
         puts""
         puts"           Your donation was succesful.            ".colorize(:background=>:blue)
         sleep(5)
@@ -162,10 +160,12 @@ class Item < ActiveRecord::Base
     end
         
     def self.check_if_correct(user)
-        correct_prompt=@@prompt.select("         Is everything correct?         ".colorize(:background=>:blue), ["Yes", "No, make changes"])
+        correct_prompt=@@prompt.select("         Is everything correct?         ".colorize(:background=>:blue), ["Yes", "No, make changes","Changed my mind, don't want to donate!"])
 
         if(correct_prompt=="No, make changes")
             self.add_item(user)
+        elsif(correct_prompt=="Changed my mind, don't want to donate!")
+            user.donator_menu
         else
             return nil
         end
