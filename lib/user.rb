@@ -103,11 +103,69 @@ class User < ActiveRecord::Base
             end
             cancel_item=Transaction.find(transactions[list_number-1].id)
             cancel_item.status="Canceled"
+            update_inventory=cancel_item.item.quantity-=cancel_item.quantity
             cancel_item.save
+            cancel_item.item.save
+            Interface.donator_logo
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                            YOUR CANCELLATION WAS SUCCESSFUL                           ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            sleep(4)
+            self.donator_menu
         else
             puts"                                                                                       ".colorize(:background=>:blue)
             puts"                                                                                       ".colorize(:background=>:blue)
             puts"                       NO TRANSACTIONS AVAILABLE FOR CANCELATION                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            sleep(4)
+            self.donator_menu
+        end
+    end
+
+    def update_quantity
+        Interface.donator_logo
+        transactions=self.transactions.where(status:"Added",kind:"Donation")
+
+        if(!transactions.empty?)
+            puts""
+            puts"           Which item you want to update           ".colorize(:background=>:blue)
+            self.render_table(transactions)
+            puts""
+            list_number=self.list_number_validation(transactions)
+
+            self.render_item_correct(transactions[list_number-1])
+            
+            puts""
+            check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't update anything"])
+            if(check_if_correct=="No, change it.")
+                self.cancel_donation
+            elsif(check_if_correct=="Don't update anything")
+                self.donator_menu
+            end
+
+            update_item=Transaction.find(transactions[list_number-1].id)
+            old_quantity=update_item.quantity
+            update_item.quantity=self.check_quantity
+            difference=update_item.quantity-old_quantity
+            update_inventory=update_item.item.quantity += difference
+            update_item.save
+            update_item.item.save
+            Interface.donator_logo
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                               YOUR UPDATE WAS SUCCESSFUL                              ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            sleep(4)
+            self.donator_menu
+
+        else
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                           NO TRANSACTIONS AVAILABLE FOR UPDATE                        ".colorize(:background=>:blue)
             puts"                                                                                       ".colorize(:background=>:blue)
             puts"                                                                                       ".colorize(:background=>:blue)
             sleep(4)
@@ -147,6 +205,20 @@ class User < ActiveRecord::Base
                 puts""
             end
         list_number
+    end
+
+    def check_quantity
+        quantity=0
+        loop do
+            puts ""
+            quantity=@@prompt.ask("          What's the new quantity?          ".colorize(:background=>:blue)).to_i
+                    break if quantity>0
+                    puts""
+                    puts "          Wrong input, only numbers above zero are accepted".red
+                    puts "                              TRY AGAIN"
+                    puts""
+            end
+        quantity
     end
 
 end    
