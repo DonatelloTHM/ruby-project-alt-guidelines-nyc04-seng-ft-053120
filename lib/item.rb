@@ -11,27 +11,26 @@ class Item < ActiveRecord::Base
         name=@@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue)).downcase
         puts""
 
-        #-------------------- new approach
-
         get_donated_transactions=Transaction.where(kind:"Donation")
         all_items=get_donated_transactions.map(&:item).uniq
-        binding.pry
-        all_items.select{|items| items.name.include?(name)}
-        #----------------------
-        similar_array=all_items.where("name like ?", "%#{name}%")   #returns an array with instances of the item that have a similar name
+        similar_array=all_items.select{|items| items.name.include?(name)}
         
         if(!similar_array.empty?)
             self.render_table(similar_array)
-            item_on_the_list=@@prompt.select("   Is your item anywhere on this list?  ".colorize(:background=>:blue), ["Yes","No"])
+            item_on_the_list=@@prompt.select("          Is your item on this list?            ".colorize(:background=>:blue), ["Yes","No"])
             puts""
 
             if(item_on_the_list=="Yes")
                 list_number=0
-                loop do
-                    list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{similar_array.length}  ".colorize(:background=>:blue)).to_i
-                    break if list_number.between?(1, similar_array.length)
-                    puts "Wrong input , your input should be between 1-#{similar_array.length}".colorize(:red)
-                    puts""
+                if(similar_array.length==1)
+                    list_number=1
+                else
+                    loop do
+                        list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{similar_array.length}  ".colorize(:background=>:blue)).to_i
+                        break if list_number.between?(1, similar_array.length)
+                        puts "Wrong input , your input should be between 1-#{similar_array.length}".colorize(:red)
+                        puts""
+                    end
                 end
 
                 new_quantity=self.check_quantity

@@ -84,25 +84,36 @@ class User < ActiveRecord::Base
     def cancel_donation
         Interface.donator_logo
         transactions=self.transactions.where(status:"Added",kind:"Donation")
-        puts""
-        puts"           Which item you want to cancel           ".colorize(:background=>:blue)
-        self.render_table(transactions)
-        puts""
-        list_number=self.list_number_validation(transactions)
-        self.render_item_correct(transactions[list_number-1])
-        
-        puts""
-        check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't cancel anything"])
-        if(check_if_correct=="No, change it.")
-            self.cancel_donation
-        elsif(check_if_correct=="Don't cancel anything")
+
+        if(!transactions.empty?)
+            puts""
+            puts"           Which item you want to cancel           ".colorize(:background=>:blue)
+            self.render_table(transactions)
+            puts""
+            list_number=self.list_number_validation(transactions)
+
+            self.render_item_correct(transactions[list_number-1])
+            
+            puts""
+            check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't cancel anything"])
+            if(check_if_correct=="No, change it.")
+                self.cancel_donation
+            elsif(check_if_correct=="Don't cancel anything")
+                self.donator_menu
+            end
+            cancel_item=Transaction.find(transactions[list_number-1].id)
+            cancel_item.status="Canceled"
+            cancel_item.save
+        else
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                       NO TRANSACTIONS AVAILABLE FOR CANCELATION                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            sleep(4)
             self.donator_menu
         end
-        cancel_item=Transaction.find(transactions[list_number-1].id)
-        cancel_item.status="Canceled"
-        cancel_item.save
     end
-
 
     def render_table(transactions)
 
