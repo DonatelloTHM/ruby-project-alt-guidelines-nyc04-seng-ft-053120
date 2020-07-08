@@ -130,7 +130,9 @@ class Item < ActiveRecord::Base
         puts @@ascii.asciify(transaction.user.name).colorize(:cyan)
         puts""
         puts"           Your request was succesful.            ".colorize(:background=>:blue)
-        # user.list_transactions
+
+        transaction.display
+
         sleep(5)
         User.user_menu(transaction.user)
     end
