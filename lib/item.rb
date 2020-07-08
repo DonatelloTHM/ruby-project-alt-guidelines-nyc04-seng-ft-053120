@@ -36,16 +36,16 @@ class Item < ActiveRecord::Base
                 self.succesful_donation(user)
 
                 else
-                puts""
                 check_name=@@prompt.select("   Is '#{name}' the name of the item that you wanted to add?  ".colorize(:background=>:blue), ["Yes","No"])
                 if(check_name=="No")
+                    puts""
                     name=@@prompt.ask("      What's the new name?     ".colorize(:background=>:blue)).downcase
+                    puts""
                 end
             end
         end
         item=self.new
         item.name=name
-        puts""
         item.category=@@prompt.select("         Choose the category?           ".colorize(:background=>:blue), ["Health","Tools","Electronics","Clothing"])
         puts""
         item.description=@@prompt.ask("        Write a short description       ".colorize(:background=>:blue))

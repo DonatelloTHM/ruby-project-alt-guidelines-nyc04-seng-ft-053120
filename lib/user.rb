@@ -5,8 +5,7 @@ class User < ActiveRecord::Base
     @@prompt=TTY::Prompt.new
 
     def self.user_menu(user)
-        system("clear")
-        puts""
+        Interface.logo
         puts"           Choose your window?            "
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
@@ -53,9 +52,9 @@ class User < ActiveRecord::Base
     end
 
     def requester_menu
-        system("clear")
+        Interface.receiver_logo
         puts""
-        puts "          Requester's Main Menu          "
+        puts "          Requester's Main Menu          ".colorize(:background=>:red)
         @@prompt.select("",active_color: :green) do |m|
             m.enum "."
             m.choice "          Make a Request", -> {Item.rrequest_item(self)}  #2
@@ -65,13 +64,13 @@ class User < ActiveRecord::Base
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
             m.choice "          Quit".red, ->{Interface.quit}
         end
-        return nil
+        puts""
     end
 
     def donator_menu
-        system("clear")
+        Interface.donator_logo
         puts""
-        puts "          Donator's Main Menu          "
+        puts "          Donator's Main Menu          ".colorize(:background=>:green)
         @@prompt.select("",active_color: :green) do |m|
             m.enum "."
             m.choice "          Make a Donation", -> {Item.add_item(self)}  #2
@@ -81,7 +80,7 @@ class User < ActiveRecord::Base
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
             m.choice "          Quit".red, ->{Interface.quit}
         end
-        return nil
+        puts""
     end
 
     def cancel_donation
