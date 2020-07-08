@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(version: 2020_07_05_203155) do
   create_table "transactions", force: :cascade do |t|
     t.integer "user_id"
     t.string "status"
+    t.string "kind"
     t.integer "item_id"
     t.integer "quantity"
     t.datetime "created_at", null: false
