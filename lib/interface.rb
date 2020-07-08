@@ -137,6 +137,156 @@
 # login_register=prompt.select("".colorize(:color => :black, :background => :light_green), ["               Login                ","              Register             ","               Quit               ".colorize(:red)])
 
 
+
+    def self.first_menu
+        Interface.logo
+        puts "          Select your option         ".colorize(:color => :black, :background => :light_green)+"                          ".colorize(:background => :cyan)+"          ".colorize(:background => :light_blue)
+        puts""
+        login_register=@@prompt.select("".colorize(:color => :black, :background => :light_green), ["               Login                ","              Register             ","               Quit               ".colorize(:red)])
+        if(login_register=="               Login                ")
+            self.login
+        elsif(login_register=="              Register             ")
+            self.signup
+        else
+            self.quit     #build this method
+        end
+    end
+
+
+    def self.login
+        self.logo_no_animation
+        self.login_screen_banner
+        puts""
+        puts""
+        puts "                     "+"      What's your Username?     ".colorize(:background=>:red)
+        username=@@prompt.ask("                     "+" ? ".colorize(:color=>:red,:background=>:white),required: true)
+        user = User.where(username: username).take
+        if user
+           self.check_password(user)
+        else
+            self.logo_no_animation
+            self.login_screen_banner
+           puts"       You typed '#{username}', which can't be found anywhere in our userbase         ".colorize(:background=>:red)
+            rollback= @@prompt.select("     ",active_color: :green) do |w|
+                    w.choice "          Try Again", -> {self.login}
+                    w.choice "          Register", -> {self.register}
+                    w.choice "          Quit".red, -> {Interface.quit}
+            end
+        end
+        binding.pry
+    end
+
+    def self.check_password(user)
+        puts""
+        puts "                     "+"      What's your Password?     ".colorize(:background=>:red)
+            password = @@prompt.mask("                     "+" # ".colorize(:color=>:red,:background=>:white),required: true)
+            if password == user.password
+                self.animation
+                self.welcome_user_animation(user)
+                User.user_menu(user)
+            else    
+                self.logo_no_animation
+                self.login_screen_banner
+               puts"                            WRONG PASSWORD                            ".colorize(:background=>:red)
+                rollback= @@prompt.select("     ",active_color: :green) do |w|
+                        w.choice "          Try Again", -> {self.password_try_again(user)}
+                        w.choice "          Register", -> {self.register}
+                        w.choice "          I have another account", -> {self.login}
+                        w.choice "          Quit".red, -> {Interface.quit}
+                end
+            end
+    end
+
+    def self.password_try_again(user)
+        self.logo_no_animation
+        self.login_screen_banner
+        puts""
+        self.check_password(user)
+    end
+
+
+    def self.register
+      self.logo_no_animation
+      self.signup_screen_banner
+      puts""
+      puts "                        "+"         Username         ".colorize(:background=>:red)
+        username=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
+            q.validate{|input| input.length >= 3}
+            q.messages[:valid?] = 'Username should be 3 or more characters long'
+        end
+        user = User.where(username: username).take
+        if user
+                self.logo_no_animation
+                self.signup_screen_banner
+                puts"       User '#{username} already exists, try another one.      ".colorize(:background=>:red)
+                rollback= @@prompt.select("     ",active_color: :green) do |w|
+                        w.choice "          Try Again", -> {self.register}
+                        w.choice "          Login Screen", -> {self.login}
+                        w.choice "          Quit".red, -> {Interface.quit}
+                end
+        else
+          puts"       You chose  '#{username}' as your username, want to continue?      ".colorize(:background=>:green)
+          rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Yes"
+            w.choice "          No, I want to change it", -> {self.register}
+            w.choice "          Login Screen", -> {self.login}
+            w.choice "          Quit".red, -> {Interface.quit}  
+          end
+        end
+        password=self.register_password
+        binding.pry
+    end
+
+    def self.register_password
+      self.logo_no_animation
+      self.signup_screen_banner
+      puts""
+      puts "                        "+"         Password         ".colorize(:background=>:red)
+        password1=@@prompt.mask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
+            q.validate{|input| input.length >= 6}
+            q.messages[:valid?] = 'Password should be 6 or more characters long'
+        end
+        puts""
+        puts "                        "+"     Retype Password      ".colorize(:background=>:red)
+        password2=@@prompt.mask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
+        end
+        if password1 != password2
+          puts"       Your password doesn't match , Try again!      ".colorize(:background=>:red)
+          sleep(2)
+          self.register_password
+        end
+        puts"         Are you happy with your password?       ".colorize(:background=>:green)
+          rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Yes"
+            w.choice "          No, I want to change it", -> {self.register_password}
+            w.choice "          Login Screen", -> {self.login}
+            w.choice "          Quit".red, -> {Interface.quit}  
+          end
+          password1
+        
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def self.donator_logo
         system("clear")
         puts""  
@@ -201,6 +351,29 @@ puts""
 puts""
     end
 
+    def self.logo_no_animation
+        system("clear")
+
+puts""  
+puts""
+puts""
+puts""
+puts"                ██████   ██████  ███    ██  █████  ████████ ███████            ........"
+puts"                ██   ██ ██    ██ ████   ██ ██   ██    ██    ██                     ........"
+puts"          ██ ██ ██   ██ ██    ██ ██ ██  ██ ███████    ██    █████ ██ ██ ".green.blink
+puts"                ██   ██ ██    ██ ██  ██ ██ ██   ██    ██    ██                     ........"
+puts"                ██████   ██████  ██   ████ ██   ██    ██    ███████               ........"
+puts"
+              ██████  ███████  ██████  ██    ██ ███████ ███████ ████████ 
+              ██   ██ ██      ██    ██ ██    ██ ██      ██         ██    
+              ██████  █████   ██    ██ ██    ██ █████   ███████    ██    
+              ██   ██ ██      ██ ▄▄ ██ ██    ██ ██           ██    ██    
+              ██   ██ ███████  ██████   ██████  ███████ ███████    ██    
+                                  ▀▀                                     "
+.colorize(:red)  
+puts""
+puts""
+    end
 
 
 
@@ -212,7 +385,8 @@ puts""
 
 
 
-    def animation
+
+    def self.animation
         animacioni=[]
         frame_0="
                                                                                                             
@@ -1106,6 +1280,35 @@ puts""
             b+=1
         end
         end
+
+
+        def self.welcome_user_animation(user)
+            ngjyra=[:cyan,:light_green,:blue,:magenta,:red,:yellow,:green,:blue,:light_blue,:light_green]
+                ffr=0
+                7.times do
+                puts ""
+                puts ""
+                a=Artii::Base.new :font => 'slant'
+                puts a.asciify("    Welcome")
+                puts a.asciify("    back")
+                ds=Artii::Base.new :font => 'roman'
+                puts""
+                puts ds.asciify("     "+user.name).colorize(ngjyra[ffr])
+                sleep (0.3)
+                system("clear")
+                ffr+=1
+                end
+        end
+
+        def self.login_screen_banner
+        puts "                          "+"                       ".colorize(:color => :white,:background => :green)
+        puts "                          ".colorize(:color => :black, :background => :white)+"     LOGIN SCREEN      ".colorize(:color => :black,:background => :green)+"                          ".colorize(:background => :white)
+        end
+
+        def self.signup_screen_banner
+          puts "                          "+"                       ".colorize(:color => :white,:background => :green)
+          puts "                          ".colorize(:color => :black, :background => :white)+"     SIGNUP SCREEN     ".colorize(:color => :black,:background => :green)+"                          ".colorize(:background => :white)
+          end
 end
 
 
