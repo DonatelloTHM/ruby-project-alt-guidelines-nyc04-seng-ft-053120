@@ -130,6 +130,7 @@
         end
 
         return selected_transaction
+    end
 
     def self.donator_logo
         system("clear")
