@@ -10,7 +10,15 @@ class Item < ActiveRecord::Base
         Interface.donator_logo
         name=@@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue)).downcase
         puts""
-        similar_array=self.where("name like ?", "%#{name}%")   #returns an array with instances of the item that have a similar name
+
+        #-------------------- new approach
+
+        get_donated_transactions=Transaction.where(kind:"Donation")
+        all_items=get_donated_transactions.map(&:item).uniq
+        binding.pry
+        all_items.select{|items| items.name.include?(name)}
+        #----------------------
+        similar_array=all_items.where("name like ?", "%#{name}%")   #returns an array with instances of the item that have a similar name
         
         if(!similar_array.empty?)
             self.render_table(similar_array)
