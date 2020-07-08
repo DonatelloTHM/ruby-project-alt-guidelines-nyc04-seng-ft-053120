@@ -85,8 +85,8 @@ class User < ActiveRecord::Base
     end
 
     def cancel_donation
+        Interface.donator_logo
         transactions=self.transactions.where(status:"Added",kind:"Donation")
-        system("clear")
         puts""
         puts"           Which item you want to cancel           ".colorize(:background=>:blue)
         self.render_table(transactions)
@@ -122,7 +122,7 @@ class User < ActiveRecord::Base
     end
 
     def render_item_correct(transaction)
-        system("clear")
+        Interface.donator_logo
 
             table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category','Quantity','Date Added'], [[transaction.item.name.colorize(:red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]]
             puts""
