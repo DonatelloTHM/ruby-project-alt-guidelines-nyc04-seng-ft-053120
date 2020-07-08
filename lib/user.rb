@@ -22,15 +22,21 @@ class User < ActiveRecord::Base
     end
     
     def list_transactions
-        transactions = Transaction.where(user_id: self.id)
-        tp transactions
-        return transactions
+        self.transactions
     end
 
     def cancel_request
-        transactions = Transaction.where(user_id: self.id, status:"Requested")
-        tp transactions
-        # User.user_menu(self)
+        tp self.transactions
+        selected_request = Interface.select_one_transaction_from_array(self.transactions)
+        if (selected_request) 
+            selected_request.status = "Request CANCELLED"
+            selected_request.save
+            selected_request.display
+        else
+            puts "??? REQUEST NOT FOUND"
+        end
+        binding.pry
+        return
     end
 
     def update_request

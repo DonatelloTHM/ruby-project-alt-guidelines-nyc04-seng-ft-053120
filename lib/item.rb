@@ -115,7 +115,7 @@ class Item < ActiveRecord::Base
         user.donator_menu
     end
 
-    def self.succesful_request(user)
+    def self.succesful_request(transaction)
         system('clear')
         puts"           
                     ░█▀█▀█ █── ▄▀▄ █▄─█ █─▄▀──
@@ -127,12 +127,12 @@ class Item < ActiveRecord::Base
                     ────░█──── ─▀─ ─▀───
         "
         puts""
-        puts @@ascii.asciify(user.name).colorize(:cyan)
+        puts @@ascii.asciify(transaction.user.name).colorize(:cyan)
         puts""
         puts"           Your request was succesful.            ".colorize(:background=>:blue)
         # user.list_transactions
         sleep(5)
-        User.user_menu(user)
+        User.user_menu(transaction.user)
     end
 
     # validates that the input is correct
@@ -210,20 +210,20 @@ class Item < ActiveRecord::Base
                 item_id: item.id,
                 quantity: item.quantity
             )
-            item.display
-            transaction.display
         else
             # item found
             # TO ADD: user option to modify existing request if created by user
             puts "Found Matching Request"
             transaction = Transaction.where(item_id: item.id)
-            item.display
-            transaction.display
-
             # if user wants existing item(s), have user confirm and accept donation
         end
 
-        self.succesful_request(user)
+        user.transactions.push(transaction)
+        item.transactions.push(transaction)
+
+        transaction.display
+
+        self.succesful_request(transaction)
 
     end
 end

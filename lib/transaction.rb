@@ -6,4 +6,8 @@ class Transaction < ActiveRecord::Base
         tp self
     end
 
+    def self.list_all
+        tp Transaction.all
+    end
+
 end

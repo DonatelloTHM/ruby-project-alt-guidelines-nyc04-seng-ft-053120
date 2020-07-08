@@ -26,7 +26,6 @@
     def self.get_valid_user_attribute(attribute)
         new_attribute = nil
         while (!new_attribute) do
-
             case attribute
             when "password"
                 new_attribute = @@prompt.ask("#{attribute}?") do |q|
@@ -100,5 +99,36 @@
             puts "LOGIN FAILED"
             return nil
         end
+    end
+
+    # helper method for displaying and selecting one transaction from an array
+    def self.select_one_transaction_from_array(transaction_array, per_page = 10)
+        pp transaction_array
+
+        choices_array = []
+        transaction_array.each do |transaction|
+            hash = Hash.new
+            choice_name_string = "STATUS: #{transaction.status} | QUANTITY: #{transaction.item.quantity} | CATEGORY: #{transaction.item.category} | NAME: #{transaction.item.name}"
+            hash[:name] = choice_name_string # used for prompt select
+            hash[:value] = transaction # used for prompt select
+            # hash[:value] = transaction.object_id
+            # hash[:status] = transaction.status
+            # hash[:category] = transaction.item.category
+            # hash[:quantity] = transaction.item.quantity
+            # hash[:item_name] = transaction.item.name
+            # hash[:username] = transaction.user.username
+            # hash[:user_name] = transaction.user.name
+            choices_array.push(hash)
+        end
+
+        selected_transaction = nil
+        binding.pry
+        selected_transaction = @@prompt.select("CHOOSE AN ITEM") do |menu|
+            menu.per_page per_page
+            menu.help '(Wiggle thy finger up/down and left/right to see more)'
+            menu.choices choices_array
+        end
+
+        return selected_transaction
     end
  end

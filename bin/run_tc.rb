@@ -6,6 +6,8 @@ require_relative '../config/environment'
 # If user exists, login user
 user = nil
 
+# binding.pry
+
 while (!user) do
     user = Interface.login_signup
 end
