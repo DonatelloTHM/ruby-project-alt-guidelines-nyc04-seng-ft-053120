@@ -7,6 +7,7 @@ class Item < ActiveRecord::Base
 
     def self.add_item(user)
         puts""
+        self.donator_logo
         name=@@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue)).downcase
         puts""
         similar_array=self.where("name like ?", "%#{name}%")   #returns an array with instances of the item that have a similar name
@@ -63,7 +64,7 @@ class Item < ActiveRecord::Base
 
     #helper method to render tables for the similar items
     def self.render_table(similar_array)
-        system("clear")
+        self.donator_logo
         table_array=[]
         i=1
         similar_array.each do |items|
@@ -81,7 +82,7 @@ class Item < ActiveRecord::Base
 
     #helper method to render the tables for a specific transaction
     def self.item_table(item_array,quantity=nil)
-        system("clear")
+        self.donator_logo
 
         if(quantity)
             table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category','Quantity','Description'], [[item_array.name.colorize(:red),item_array.category,quantity,item_array.description]]
@@ -225,6 +226,91 @@ class Item < ActiveRecord::Base
 
         self.succesful_request(user)
 
+    end
+
+
+
+
+
+
+    #------------------------------- NEW REQUEST METHOD ------------------------------
+
+    def self.rrequest_item(user)
+        self.receiver_logo
+        get_donated_transactions=Transaction.where(status:"Added",kind:"Donation")
+        available=get_donated_transactions.map{|transaction| transaction.item.name}.uniq.unshift("CAN'T FIND WHAT I'M LOOKING FOR".colorize(:red))
+        puts "          What item are you interested in?            ".colorize(:background=>:blue)
+        available_selection=@@prompt.select('', available, filter: true, per_page:5)
+        selected_item=Item.find_by(name:available_selection)
+        matching_donations=Transaction.where(item_id:selected_item.id,status:"Added",kind:"Donation").reject{|transaction| transaction.user_id==user.id}
+        self.render_items_matched(matching_donations)
+    
+
+        list_number=0
+            loop do
+                list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{matching_donations.length}  ".colorize(:background=>:blue)).to_i
+                break if list_number.between?(1, matching_donations.length)
+                puts "Wrong input , your input should be between 1-#{matching_donations.length}".colorize(:red)
+                puts""
+            end
+        change_status=matching_donations[list_number-1]
+        change_status.status="Reserved"
+        puts""
+        correct_ask=@@prompt.select("         You want to continue with your choice?         ".colorize(:background=>:blue), ["Yes", "No, I want to change it"])
+        if(correct_ask=="No, I want to change it")
+            self.rrequest_item(user)
+        end
+
+
+        
+        
+        
+        
+        
+        
+    end
+
+
+    def self.render_items_matched(transactions)
+        self.receiver_logo
+        list_no=1
+        transactions.each do |transaction|
+            table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category','Quantity','Address'], [[transaction.item.name.colorize(:red),transaction.item.category,transaction.quantity,transaction.user.address]]
+            puts "          LIST NO. #{list_no}  ".colorize(:background=>:blue)
+            puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:100, padding: [0,1,0,1],resize: true)
+            puts""
+            list_no+=1
+        end
+    end
+
+
+   def self.donator_logo
+        system("clear")
+        puts""  
+        puts""
+        puts""
+        puts""
+        puts"                ██████   ██████  ███    ██  █████  ████████ ███████            ........"
+        puts"                ██   ██ ██    ██ ████   ██ ██   ██    ██    ██                     ........"
+        puts"          ██ ██ ██   ██ ██    ██ ██ ██  ██ ███████    ██    █████ ██ ██ ".green.blink
+        puts"                ██   ██ ██    ██ ██  ██ ██ ██   ██    ██    ██                     ........"
+        puts"                ██████   ██████  ██   ████ ██   ██    ██    ███████               ........"
+        puts""
+        puts"_________________________________________________________________________________________".colorize(:cyan)
+        puts""
+    end
+
+    def self.receiver_logo
+        system("clear")
+        puts""
+        puts"
+                ██████  ███████  ██████ ███████ ██ ██    ██ ███████ 
+                ██   ██ ██      ██      ██      ██ ██    ██ ██      
+                ██████  █████   ██      █████   ██ ██    ██ █████   
+                ██   ██ ██      ██      ██      ██  ██  ██  ██      
+                ██   ██ ███████  ██████ ███████ ██   ████   ███████ ".colorize(:red)
+        puts""
+        puts"_________________________________________________________________________________________".colorize(:cyan)
     end
 end
 

@@ -1,5 +1,5 @@
 require_relative '../config/environment'
-user=User.find(2)
+user=User.find(7)
 User.user_menu(user)
 
 def animation

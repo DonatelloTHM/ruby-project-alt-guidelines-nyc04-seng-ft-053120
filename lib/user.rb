@@ -58,7 +58,7 @@ class User < ActiveRecord::Base
         puts "          Requester's Main Menu          "
         @@prompt.select("",active_color: :green) do |m|
             m.enum "."
-            m.choice "          Make a Request", -> {Item.request_item(self)}  #2
+            m.choice "          Make a Request", -> {Item.rrequest_item(self)}  #2
             m.choice "          Cancel a Request", -> {self.cancel_request} #3
             m.choice "          Modify a Request", -> {self.update_request}#4
             m.choice "          View all my Requests", -> {self.view_requests}
