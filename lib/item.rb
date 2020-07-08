@@ -10,20 +10,27 @@ class Item < ActiveRecord::Base
         Interface.donator_logo
         name=@@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue)).downcase
         puts""
-        similar_array=self.where("name like ?", "%#{name}%")   #returns an array with instances of the item that have a similar name
+
+        get_donated_transactions=Transaction.where(kind:"Donation")
+        all_items=get_donated_transactions.map(&:item).uniq
+        similar_array=all_items.select{|items| items.name.include?(name)}
         
         if(!similar_array.empty?)
             self.render_table(similar_array)
-            item_on_the_list=@@prompt.select("   Is your item anywhere on this list?  ".colorize(:background=>:blue), ["Yes","No"])
+            item_on_the_list=@@prompt.select("          Is your item on this list?            ".colorize(:background=>:blue), ["Yes","No"])
             puts""
 
             if(item_on_the_list=="Yes")
                 list_number=0
-                loop do
-                    list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{similar_array.length}  ".colorize(:background=>:blue)).to_i
-                    break if list_number.between?(1, similar_array.length)
-                    puts "Wrong input , your input should be between 1-#{similar_array.length}".colorize(:red)
-                    puts""
+                if(similar_array.length==1)
+                    list_number=1
+                else
+                    loop do
+                        list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{similar_array.length}  ".colorize(:background=>:blue)).to_i
+                        break if list_number.between?(1, similar_array.length)
+                        puts "Wrong input , your input should be between 1-#{similar_array.length}".colorize(:red)
+                        puts""
+                    end
                 end
 
                 new_quantity=self.check_quantity
@@ -118,6 +125,7 @@ class Item < ActiveRecord::Base
     end
 
     def self.succesful_request(transaction)
+
         system('clear')
         puts"           
                     ░█▀█▀█ █── ▄▀▄ █▄─█ █─▄▀──
@@ -129,14 +137,14 @@ class Item < ActiveRecord::Base
                     ────░█──── ─▀─ ─▀───
         "
         puts""
-        puts @@ascii.asciify(user.name).colorize(:cyan)
+        puts @@ascii.asciify(transaction.user.name).colorize(:cyan)
         puts""
         puts"           Your request was succesful.            ".colorize(:background=>:blue)
 
         transaction.display
 
         sleep(5)
-        user.requester_menu
+        transaction.user.requester_menu
     end
 
     # validates that the input is correct
@@ -194,7 +202,7 @@ class Item < ActiveRecord::Base
         return prompt_attributes
     end
 
-    def self.request_item(user)
+    def self.create_request(user)
 
         # prompt user for item attributes
         prompt_attributes = self.prompt_attributes
@@ -215,6 +223,10 @@ class Item < ActiveRecord::Base
                 item_id: item.id,
                 quantity: item.quantity
             )
+
+            user.transactions.push(transaction)
+            item.transactions.push(transaction)
+
         else
             # item found
             # TO ADD: user option to modify existing request if created by user
@@ -222,9 +234,6 @@ class Item < ActiveRecord::Base
             transaction = Transaction.where(item_id: item.id)
             # if user wants existing item(s), have user confirm and accept donation
         end
-
-        user.transactions.push(transaction)
-        item.transactions.push(transaction)
 
         transaction.display
 
@@ -234,34 +243,59 @@ class Item < ActiveRecord::Base
 
 
 
-
-
-
     #------------------------------- NEW REQUEST METHOD ------------------------------
 
     def self.rrequest_item(user)
+
         Interface.receiver_logo
-        get_donated_transactions=Transaction.where(status:"Added",kind:"Donation")
-        available=get_donated_transactions.map{|transaction| transaction.item.name}.uniq.unshift("CAN'T FIND WHAT I'M LOOKING FOR".colorize(:red))
-        puts "          What item are you interested in?            ".colorize(:background=>:blue)
-        available_selection=@@prompt.select('', available, filter: true, per_page:5)
-        selected_item=Item.find_by(name:available_selection)
-        matching_donations=Transaction.where(item_id:selected_item.id,status:"Added",kind:"Donation").reject{|transaction| transaction.user_id==user.id}
+
+        # get_donated_transactions = Transaction.where(status:"Added", kind:"Donation")
+
+        available_donated_transactions = Transaction.where(
+            'user_id != ? AND status = ? AND kind = ?', 
+            user.id, "Added", "Donation"
+        )
+
+        if available_donated_transactions.length == 0
+            puts "NO AVAILABLE DONATIONS FOUND"
+            self.create_request(user)
+            return
+        end
+
+        available_donations_selection_list = available_donated_transactions.map{ |transaction| 
+            "#{transaction.item.name}"
+        }.uniq.unshift("CAN'T FIND WHAT I'M LOOKING FOR".colorize(:red))
+
+        # binding.pry
+
+        puts "What item are you interested in?"
+
+        available_selection = @@prompt.select("", available_donated_transactions, filter: true, per_page:5)
+
+        selected_item = Item.find_by(name:available_selection)
+
+        matching_donations = Transaction.where(item_id:selected_item.id, status:"Added", kind:"Donation").reject{ |transaction|
+            transaction.user_id == user.id
+        }
+
         self.render_items_matched(matching_donations)
     
+        list_number = 0
 
-        list_number=0
-            loop do
-                list_number=@@prompt.ask("   Type the list no. of your item, from 1-#{matching_donations.length}  ".colorize(:background=>:blue)).to_i
-                break if list_number.between?(1, matching_donations.length)
-                puts "Wrong input , your input should be between 1-#{matching_donations.length}".colorize(:red)
-                puts""
-            end
+        loop do
+            list_number=@@prompt.ask("Type the list no. of your item, from 1-#{matching_donations.length}  ").to_i
+            break if list_number.between?(1, matching_donations.length)
+            puts "Wrong input , your input should be between 1-#{matching_donations.length}".colorize(:red)
+            puts""
+        end
+
         change_status=matching_donations[list_number-1]
         change_status.status="Reserved"
+
         puts""
-        correct_ask=@@prompt.select("         You want to continue with your choice?         ".colorize(:background=>:blue), ["Yes", "No, I want to change it"])
-        if(correct_ask=="No, I want to change it")
+        correct_ask=@@prompt.select("You want to continue with your choice?", ["Yes", "No, I want to change it"])
+        
+        if(correct_ask == "No, I want to change it")
             self.rrequest_item(user)
         end
 
@@ -271,19 +305,23 @@ class Item < ActiveRecord::Base
 
     def self.render_items_matched(transactions)
         Interface.receiver_logo
-        list_no=1
+        list_no = 1
         transactions.each do |transaction|
             table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category','Quantity','Address'], [[transaction.item.name.colorize(:red),transaction.item.category,transaction.quantity,transaction.user.address]]
-            puts "          LIST NO. #{list_no}  ".colorize(:background=>:blue)
-            puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:100, padding: [0,1,0,1],resize: true)
+            puts "LIST NO. #{list_no}"
+            puts table.render(
+                :unicode,
+                indent:8,
+                alignments:[:center, :center,:center],
+                width:100,
+                padding: [0,1,0,1],
+                resize: true
+            )
             puts""
-            list_no+=1
+            list_no += 1
         end
     end
 
 
   
 end
-
-
-

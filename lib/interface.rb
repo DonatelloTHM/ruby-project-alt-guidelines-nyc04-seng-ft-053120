@@ -1,7 +1,8 @@
  class Interface
 
     @@prompt=TTY::Prompt.new
-
+    @@test_mode = true
+    
     def self.quit
         puts "QUITTING ..."
         exit(true)
@@ -87,28 +88,36 @@
         user = User.where(username: username).take
 
         if user
-            password = @@prompt.mask("password? ")
-            if password == user.password
-                # maybe we should a user status to show login state?
-                # user.status = "logged in"
+            if @@test_mode
                 puts "LOGIN SUCCESS"
                 user.display
                 return user
+            else 
+                password = @@prompt.mask("password? ")
+
+                if password == user.password
+                    # maybe we should a user status to show login state?
+                    # user.status = "logged in"
+                    puts "LOGIN SUCCESS"
+                    user.display
+                    return user
+                else
+                    puts "LOGIN FAILED"
+                    return nil
+                end
             end
         else
-            puts "LOGIN FAILED"
-            return nil
         end
     end
 
     # helper method for displaying and selecting one transaction from an array
     def self.select_one_transaction_from_array(transaction_array, per_page = 10)
-        pp transaction_array
+        # pp transaction_array
 
         choices_array = []
         transaction_array.each do |transaction|
             hash = Hash.new
-            choice_name_string = "STATUS: #{transaction.status} | QUANTITY: #{transaction.item.quantity} | CATEGORY: #{transaction.item.category} | NAME: #{transaction.item.name}"
+            choice_name_string = "STATUS: #{transaction.status} | QTY: #{transaction.item.quantity} | CATEGORY: #{transaction.item.category} | NAME: #{transaction.item.name}"
             hash[:name] = choice_name_string # used for prompt select
             hash[:value] = transaction # used for prompt select
             # hash[:value] = transaction.object_id
@@ -122,7 +131,7 @@
         end
 
         selected_transaction = nil
-        binding.pry
+
         selected_transaction = @@prompt.select("CHOOSE AN ITEM") do |menu|
             menu.per_page per_page
             menu.help '(Wiggle thy finger up/down and left/right to see more)'
@@ -162,8 +171,6 @@
         ".colorize(:red)
         puts"_________________________________________________________________________________________".colorize(:cyan)
     end
-
-
 
     def self.logo
         system("clear")
