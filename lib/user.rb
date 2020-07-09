@@ -255,7 +255,7 @@ class User < ActiveRecord::Base
             if(transactions.length==1)
                 check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","Don't update anything"])
                 if(check_if_correct=="Don't update anything")
-                    self.self.donator_menu
+                    self.donator_menu
                 end
             else
                 check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't update anything"])
