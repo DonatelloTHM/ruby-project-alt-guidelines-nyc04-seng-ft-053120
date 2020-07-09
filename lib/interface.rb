@@ -111,7 +111,8 @@
     end
 
     # helper method for displaying and selecting one transaction from an array
-    def self.select_one_transaction_from_array(transaction_array, per_page = 10)
+    # options = {:first_name => "Justin", :last_name => "Weiss"}
+    def self.select_one_transaction_from_array(transaction_array:, per_page: 10, choice: false)
         # pp transaction_array
 
         choices_array = []
@@ -120,14 +121,13 @@
             choice_name_string = "STATUS: #{transaction.status} | QTY: #{transaction.item.quantity} | CATEGORY: #{transaction.item.category} | NAME: #{transaction.item.name}"
             hash[:name] = choice_name_string # used for prompt select
             hash[:value] = transaction # used for prompt select
-            # hash[:value] = transaction.object_id
-            # hash[:status] = transaction.status
-            # hash[:category] = transaction.item.category
-            # hash[:quantity] = transaction.item.quantity
-            # hash[:item_name] = transaction.item.name
-            # hash[:username] = transaction.user.username
-            # hash[:user_name] = transaction.user.name
+
             choices_array.push(hash)
+        end
+
+        # if transaction is actually a predefined choice, just push into choice array
+        if choice
+            choices_array.push(choice)
         end
 
         selected_transaction = nil
@@ -182,7 +182,6 @@
                     w.choice "          Quit".red, -> {Interface.quit}
             end
         end
-        binding.pry
     end
 
     def self.check_password(user)

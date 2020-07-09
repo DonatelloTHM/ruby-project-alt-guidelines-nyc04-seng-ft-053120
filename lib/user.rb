@@ -25,63 +25,114 @@ class User < ActiveRecord::Base
         self.transactions
     end
 
-    # modification_type = "cancel" or "modify" or "close"
-    def modify_request(modification_type)
+    # def self.select_one_transaction_from_array(transaction_array:, per_page: 10, choice: false)
 
+    def select_active_request_transaction
         transactions = Transaction.where(
             'user_id = ? AND status != ? AND status != ? AND kind = ?', 
             self.id, "Closed", "Cancelled", "Request"
         )
+        transaction = Interface.select_one_transaction_from_array(transaction_array: transactions)
+        return transaction
+    end
 
-        selected_transaction = Interface.select_one_transaction_from_array(transactions)
+    def select_active_donatation_transaction
+        transactions = Transaction.where(
+            "kind = ? AND status = ? AND user_id != ?", 
+            "Donation", "Added", self.id
+        )
 
-        case modification_type
+        new_request_choice = Hash.new
+        new_request_choice[:name] = "Create a new request"
+        new_request_choice[:value] = "new" # used for prompt select
 
-        when "cancel"
-            puts "CANCELLING TRANSACTION"
+        transaction = Interface.select_one_transaction_from_array(transaction_array: transactions, choice: new_request_choice)
+        return transaction
+    end
 
-            selected_transaction.display
+    # request type = "create" or "cancel" or "modify"
+    def request(type)
 
-            confirm_cancel_transaction = @@prompt.select("CONFIRM CANCEL?  ", ["Yes", "No", "Back"])
+        case type
 
-            if confirm_cancel_transaction == "Yes"
-                selected_transaction.status = "Cancelled"
-                selected_transaction.save
+            when "create"
+                
+                puts "CREATING REQUEST"
+                selected_transaction = select_active_donatation_transaction
+
+                if selected_transaction == "new"
+                    # created a new donation
+                    selected_transaction = Item.create_request(self)
+                    selected_transaction.display
+                else
+                    # selected an available donation
+                    selected_transaction.display
+                    confirm_reserve_donation = @@prompt.select("RESERVE DONATION?  ", ["Yes", "No", "Back"])
+
+                    if confirm_reserve_donation == "Yes"
+                        selected_transaction.status = "Reserved"
+                        selected_transaction.save
+                        selected_transaction.display
+                        sleep(5)
+                        self.requester_menu
+                    elsif confirm_reserve_donation == "No"
+                        self.request("create")
+                    else
+                        self.requester_menu
+                    end
+                end
+
+
+            when "cancel"
+
+                puts "CANCELLING REQUEST"
+
+                selected_transaction = select_active_request_transaction
                 selected_transaction.display
-                sleep(5)
-                self.requester_menu
-            elsif confirm_cancel_transaction == "No"
-                self.modify_request("cancel")
-            else
-                self.requester_menu
-            end
 
-        when "modify"
+                confirm_cancel_transaction = @@prompt.select("CONFIRM CANCEL?  ", ["Yes", "No", "Back"])
 
-            puts "MODIFYING TRANSACTION"
-            selected_transaction.display
-            selected_transaction = Transaction.modify_transaction(selected_transaction)
+                if confirm_cancel_transaction == "Yes"
+                    selected_transaction.status = "Cancelled"
+                    selected_transaction.save
+                    selected_transaction.display
+                    sleep(5)
+                    self.requester_menu
+                elsif confirm_cancel_transaction == "No"
+                    self.request("cancel")
+                else
+                    self.requester_menu
+                end
 
-            confirm_modify_transaction = @@prompt.select("CONFIRM CHANGES?  ", ["Yes", "No", "Back"])
+            when "modify"
 
-            if confirm_modify_transaction == "Yes"
-                selected_transaction.save
+                puts "MODIFYING REQUEST"
+
+                selected_transaction = select_active_request_transaction
                 selected_transaction.display
-                sleep(5)
-                self.requester_menu
-            elsif confirm_modify_transaction == "No"
-                self.modify_request("modify")
-            else
-                self.requester_menu
-            end
 
-        else
-            puts "*** UNKNOWN modification_type: #{modification_type}"
-            return nil
+                modified_transaction = Transaction.modify_transaction(selected_transaction)
+
+                confirm_modify_transaction = @@prompt.select("CONFIRM CHANGES?  ", ["Yes", "No", "Back"])
+
+                if confirm_modify_transaction == "Yes"
+                    modified_transaction.save
+                    modified_transaction.display
+                    sleep(5)
+                    self.requester_menu
+                elsif confirm_modify_transaction == "No"
+                    self.request("modify")
+                else
+                    self.requester_menu
+                end
+
+            else
+                puts "*** UNKNOWN REQUEST TYPE: #{type}"
+                return nil
         end
 
-        
-        return nil
+        sleep(5)
+        self.requester_menu
     end
 
     def view_requests
@@ -103,9 +154,9 @@ class User < ActiveRecord::Base
         puts "          Requester's Main Menu          ".colorize(:background=>:red)
         @@prompt.select("",active_color: :green) do |m|
             m.enum "."
-            m.choice "          Make a Request", -> {Item.rrequest_item(self)}  #2
-            m.choice "          Cancel a Request", -> {self.modify_request("cancel")} #3
-            m.choice "          Modify a Request", -> {self.modify_request("modify")}#4
+            m.choice "          Make a Request", -> {self.request("create")}  #2
+            m.choice "          Cancel a Request", -> {self.request("cancel")} #3
+            m.choice "          Modify a Request", -> {self.request("modify")}#4
             m.choice "          View all my Requests", -> {self.view_requests}
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
             m.choice "          Quit".red, ->{Interface.quit}
