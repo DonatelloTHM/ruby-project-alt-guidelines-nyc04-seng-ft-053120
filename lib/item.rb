@@ -196,130 +196,160 @@ class Item < ActiveRecord::Base
     end
 
     # prompt user for Item attributes, returns hash of attributes
-    def self.prompt_attributes
-        prompt_attributes = Hash.new
+    # def self.prompt_attributes(user)
 
-        prompt_attributes[:name] = @@prompt.ask("      What's the name of the item?     ".colorize(:background=>:blue))
-        puts""
-        prompt_attributes[:category] = @@prompt.select("         Choose the category?           ".colorize(:background=>:blue), ["Health","Tools","Electronics","Clothing"])
-        puts""
-        prompt_attributes[:description] = @@prompt.ask("        Write a short description       ".colorize(:background=>:blue))
-        puts""
-        quantity = @@prompt.ask("          What's the quantity?          ".colorize(:background=>:blue)).to_i
+    #     prompt_attributes = Hash.new
+
+    #     prompt_attributes[:name] = @@prompt.ask("Name?")
+
+    #     #check if matching request name exists for user
+    #     binding.pry
+
+    #     possible_matching_requests = user.requests.select do |request_transaction|
+    #         request_transaction.status != "Cancelled" && request_transaction.item.name.match?(/#{prompt_attributes[:name]}/i)
+    #     end
+    #     binding.pry
+
+    #     if (possible_matching_requests.length > 0)
+
+    #         puts "\nFOUND POSSIBLE MATCHING OPEN REQUEST(S)\n"
+
+    #         Transaction.render_table(possible_matching_requests)
+
+    #         answer = @@prompt.select("??", ["MODIFY A REQUEST", "CREATE NEW REQUEST", "CONTINUE WITH THIS REQUEST"])
+
+    #         if (answer != "CONTINUING WITH THIS REQUEST")
+    #             return answer
+    #             # selected_transaction = user.select_active_request_transaction
+    #             # user.request(type: "modify", input_transaction: selected_transaction)
+    #         else #
+    #             puts "CONTINUING WITH THIS REQUEST"
+    #         end
+    #     end
+
+    #     puts""
+
+    #     prompt_attributes[:category] = @@prompt.select("Category?", ["Health","Tools","Electronics","Clothing"])
+    #     puts""
+
+    #     prompt_attributes[:description] = @@prompt.ask("Description?")
+    #     puts""
+
+    #     quantity = @@prompt.ask("Quantity?").to_i
         
-        loop do
-            if(quantity>0)
-                break
-            else
-                puts""
-                puts "          Wrong input, only numbers above zero are accepted".red
-                puts "                              TRY AGAIN"
-                puts""
-                quantity = @@prompt.ask("          What's the quantity?          ".colorize(:background=>:blue)).to_i
-            end
-            break if quantity>0
-        end
+    #     loop do
+    #         if(quantity>0)
+    #             break
+    #         else
+    #             puts""
+    #             puts "          Wrong input, only numbers above zero are accepted".red
+    #             puts "                              TRY AGAIN"
+    #             puts""
+    #             quantity = @@prompt.ask("          What's the quantity?          ".colorize(:background=>:blue)).to_i
+    #         end
+    #         break if quantity>0
+    #     end
 
-        prompt_attributes[:quantity] = quantity
-        return prompt_attributes
-    end
+    #     prompt_attributes[:quantity] = quantity
+    #     return prompt_attributes
+    # end
 
-    def self.create_request(user)
+    # def self.create_request(user)
 
-        # prompt user for item attributes
-        prompt_attributes = self.prompt_attributes
+    #     # prompt user for item attributes
+    #     prompt_attributes = self.prompt_attributes(user)
 
-        # return item if found with name, quantity & category match, otherwise create new item
-        item = Item.find_or_initialize_by(
-            name: prompt_attributes[:name], 
-            category: prompt_attributes[:category],
-            quantity: prompt_attributes[:quantity]
-        )
+    #     # return item if found with name, quantity & category match, otherwise create new item
+    #     item = Item.find_or_initialize_by(
+    #         name: prompt_attributes[:name], 
+    #         category: prompt_attributes[:category],
+    #         quantity: prompt_attributes[:quantity]
+    #     )
 
-        if item.id != nil
-            matching_donation = Transaction.where(
-                item_id: item.id
-            ).take
+    #     if item.id != nil
+    #         matching_donation = Transaction.where(
+    #             item_id: item.id
+    #         ).take
 
-            if matching_donation != nil && matching_donation.kind == "Donation" && matching_donation.kind == "Donation" && matching_donation.status == "Added"
-                puts "Found Matching Donation"
-                return matching_donation
-            end
-        end
+    #         if matching_donation != nil && matching_donation.kind == "Donation" && matching_donation.kind == "Donation" && matching_donation.status == "Added"
+    #             puts "Found Matching Donation"
+    #             return matching_donation
+    #         end
+    #     end
 
-        # item not found; creating new item
-        puts "Creating Request"
-        item.quantity = prompt_attributes[:quantity]
-        item.description = prompt_attributes[:description]
-        item.save
+    #     # item not found; creating new item
+    #     puts "Creating Request"
+    #     item.quantity = prompt_attributes[:quantity]
+    #     item.description = prompt_attributes[:description]
+    #     item.save
 
-        # modified Transaction class to have donor and requester ids
-        transaction = Transaction.create(
-            requester_id: user.id,
-            status: "Open",
-            item_id: item.id,
-            quantity: item.quantity,
-            kind: "Request"
-        )
+    #     # modified Transaction class to have donor and requester ids
+    #     transaction = Transaction.create(
+    #         requester_id: user.id,
+    #         status: "Open",
+    #         item_id: item.id,
+    #         quantity: item.quantity,
+    #         kind: "Request"
+    #     )
 
-        return transaction
+    #     return transaction
 
-    end
+    # end
 
     #------------------------------- NEW REQUEST METHOD ------------------------------
 
-    def self.rrequest_item(user)
+    # def self.rrequest_item(user)
 
-        Interface.receiver_logo
+    #     Interface.receiver_logo
 
-        available_donated_transactions = Transaction.where(
-            'donor_id != ? AND  status = ? AND kind = ?', 
-            user.id, "Added", "Donation"
-        )
+    #     available_donated_transactions = Transaction.where(
+    #         'donor_id != ? AND  status = ? AND kind = ?', 
+    #         user.id, "Added", "Donation"
+    #     )
 
-        if available_donated_transactions.length == 0
-            puts "NO AVAILABLE DONATIONS FOUND"
-            self.create_request(user)
-            return
-        end
+    #     if available_donated_transactions.length == 0
+    #         puts "NO AVAILABLE DONATIONS FOUND"
+    #         self.create_request(user)
+    #         return
+    #     end
 
-        available_donations_selection_list = available_donated_transactions.map{ |transaction| 
-            "#{transaction.item.name}"
-        }.uniq.unshift("CAN'T FIND WHAT I'M LOOKING FOR".colorize(:red))
+    #     available_donations_selection_list = available_donated_transactions.map{ |transaction| 
+    #         "#{transaction.item.name}"
+    #     }.uniq.unshift("CAN'T FIND WHAT I'M LOOKING FOR".colorize(:red))
 
-        puts "What item are you interested in?"
+    #     puts "What item are you interested in?"
 
-        available_selection = @@prompt.select("", available_donated_transactions, filter: true, per_page:5)
+    #     available_selection = @@prompt.select("", available_donated_transactions, filter: true, per_page:5)
 
-        selected_item = Item.find_by(name:available_selection)
+    #     selected_item = Item.find_by(name:available_selection)
 
-        matching_donations = Transaction.where(item_id:selected_item.id, status:"Added", kind:"Donation").reject{ |transaction|
-            transaction.donor_id == user.id
-        }
+    #     matching_donations = Transaction.where(item_id:selected_item.id, status:"Added", kind:"Donation").reject{ |transaction|
+    #         transaction.donor_id == user.id
+    #     }
 
-        self.render_items_matched(matching_donations)
+    #     self.render_items_matched(matching_donations)
     
-        list_number = 0
+    #     list_number = 0
 
-        loop do
-            list_number=@@prompt.ask("Type the list no. of your item, from 1-#{matching_donations.length}  ").to_i
-            break if list_number.between?(1, matching_donations.length)
-            puts "Wrong input , your input should be between 1-#{matching_donations.length}".colorize(:red)
-            puts""
-        end
+    #     loop do
+    #         list_number=@@prompt.ask("Type the list no. of your item, from 1-#{matching_donations.length}  ").to_i
+    #         break if list_number.between?(1, matching_donations.length)
+    #         puts "Wrong input , your input should be between 1-#{matching_donations.length}".colorize(:red)
+    #         puts""
+    #     end
 
-        change_status=matching_donations[list_number-1]
-        change_status.status="Reserved"
+    #     change_status=matching_donations[list_number-1]
+    #     change_status.status="Reserved"
 
-        puts""
-        correct_ask=@@prompt.select("You want to continue with your choice?", ["Yes", "No, I want to change it"])
+    #     puts""
+    #     correct_ask=@@prompt.select("You want to continue with your choice?", ["Yes", "No, I want to change it"])
         
-        if(correct_ask == "No, I want to change it")
-            self.rrequest_item(user)
-        end
+    #     if(correct_ask == "No, I want to change it")
+    #         self.rrequest_item(user)
+    #     end
 
-        #Continue working on this tomorrow.
-    end
+    #     #Continue working on this tomorrow.
+    # end
 
 
     def self.render_items_matched(transactions)
