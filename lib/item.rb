@@ -235,13 +235,10 @@ class Item < ActiveRecord::Base
             # if user wants existing item(s), have user confirm and accept donation
         end
 
-        transaction.display
-
-        self.succesful_request(transaction)
+        return transaction
+        # self.succesful_request(transaction)
 
     end
-
-
 
     #------------------------------- NEW REQUEST METHOD ------------------------------
 
