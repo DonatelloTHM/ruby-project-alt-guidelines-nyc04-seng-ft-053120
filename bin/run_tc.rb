@@ -8,8 +8,10 @@ user = nil
 
 # binding.pry
 
-while (!user) do
-    user = Interface.login_signup
-end
+Interface.first_menu
 
-User.user_menu(user)
+# while (!user) do
+#     user = Interface.login_signup
+# end
+
+# User.user_menu(user)
