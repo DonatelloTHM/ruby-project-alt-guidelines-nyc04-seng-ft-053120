@@ -248,6 +248,7 @@
         new_user=User.create(username:username,password:password,name:name,address:full_address)
         self.animation(1)
         self.welcome_user_animation(new_user)
+        User.user_menu(new_user)
     end
 
     def self.register_password

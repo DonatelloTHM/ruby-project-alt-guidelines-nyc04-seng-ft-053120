@@ -187,19 +187,29 @@ class User < ActiveRecord::Base
 
         if(!transactions.empty?)
             puts""
+            if(transactions.length==1)
+                list_number=1
+            else
             puts"           Which item you want to cancel           ".colorize(:background=>:blue)
             self.render_table(transactions)
             puts""
             list_number=self.list_number_validation(transactions)
-
+            end
             self.render_item_correct(transactions[list_number-1])
             
             puts""
-            check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't cancel anything"])
-            if(check_if_correct=="No, change it.")
-                self.cancel_donation
-            elsif(check_if_correct=="Don't cancel anything")
-                self.donator_menu
+            if(transactions.length==1)
+                check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","Don't cancel anything"])
+                if(check_if_correct=="Don't cancel anything")
+                    self.donator_menu
+                end
+            else
+                check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't cancel anything"])
+                if(check_if_correct=="No, change it.")
+                    self.cancel_donation
+                elsif(check_if_correct=="Don't cancel anything")
+                    self.donator_menu
+                end
             end
             cancel_item=Transaction.find(transactions[list_number-1].id)
             cancel_item.status="Canceled"
@@ -231,19 +241,29 @@ class User < ActiveRecord::Base
 
         if(!transactions.empty?)
             puts""
-            puts"           Which item you want to update           ".colorize(:background=>:blue)
-            self.render_table(transactions)
-            puts""
-            list_number=self.list_number_validation(transactions)
-
+            if(transactions.length==1)
+                list_number=1
+            else
+                puts"           Which item you want to update           ".colorize(:background=>:blue)
+                self.render_table(transactions)
+                puts""
+                list_number=self.list_number_validation(transactions)
+            end
             self.render_item_correct(transactions[list_number-1])
             
             puts""
-            check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't update anything"])
-            if(check_if_correct=="No, change it.")
-                self.cancel_donation
-            elsif(check_if_correct=="Don't update anything")
-                self.donator_menu
+            if(transactions.length==1)
+                check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","Don't update anything"])
+                if(check_if_correct=="Don't update anything")
+                    self.self.donator_menu
+                end
+            else
+                check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't update anything"])
+                if(check_if_correct=="No, change it.")
+                    self.cancel_donation
+                elsif(check_if_correct=="Don't update anything")
+                    self.donator_menu
+                end
             end
 
             update_item=Transaction.find(transactions[list_number-1].id)
