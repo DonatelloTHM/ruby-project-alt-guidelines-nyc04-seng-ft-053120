@@ -25,23 +25,70 @@ class User < ActiveRecord::Base
         self.transactions
     end
 
-    def cancel_request
-        transactions = Transaction.where(user_id: self.id, status:"New",kind:"Request")
-        tp transactions
-        transaction = 
-        User.user_menu(self)
-    end
+    # modification_type = "cancel" or "modify" or "close"
+    def modify_request(modification_type)
 
-    def update_request
-        transactions = Transaction.where(user_id: self.id, status:"New",kind:"Request")
-        tp transactions
-        # User.user_menu(self)
+        transactions = Transaction.where(
+            'user_id = ? AND status != ? AND status != ? AND kind = ?', 
+            self.id, "Closed", "Cancelled", "Request"
+        )
+
+        selected_transaction = Interface.select_one_transaction_from_array(transactions)
+
+        case modification_type
+
+        when "cancel"
+            puts "CANCELLING TRANSACTION"
+
+            selected_transaction.display
+
+            confirm_cancel_transaction = @@prompt.select("CONFIRM CANCEL?  ", ["Yes", "No", "Back"])
+
+            if confirm_cancel_transaction == "Yes"
+                selected_transaction.status = "Cancelled"
+                selected_transaction.save
+                selected_transaction.display
+                sleep(5)
+                self.requester_menu
+            elsif confirm_cancel_transaction == "No"
+                self.modify_request("cancel")
+            else
+                self.requester_menu
+            end
+
+        when "modify"
+
+            puts "MODIFYING TRANSACTION"
+            selected_transaction.display
+            selected_transaction = Transaction.modify_transaction(selected_transaction)
+
+            confirm_modify_transaction = @@prompt.select("CONFIRM CHANGES?  ", ["Yes", "No", "Back"])
+
+            if confirm_modify_transaction == "Yes"
+                selected_transaction.save
+                selected_transaction.display
+                sleep(5)
+                self.requester_menu
+            elsif confirm_modify_transaction == "No"
+                self.modify_request("modify")
+            else
+                self.requester_menu
+            end
+
+        else
+            puts "*** UNKNOWN modification_type: #{modification_type}"
+            return nil
+        end
+
+        
+        return nil
     end
 
     def view_requests
-        transactions = Transaction.where(user_id: self.id, status:"New",kind:"Request")
-        tp transactions
-        # User.user_menu(self)
+        transactions = Transaction.where(user_id: self.id, kind:"Request")
+        Transaction.render_table(transactions)
+        back = @@prompt.select("", ["Back"])
+        self.requester_menu
     end
 
     def find_transaction_by_item_name(item_name)
@@ -57,8 +104,8 @@ class User < ActiveRecord::Base
         @@prompt.select("",active_color: :green) do |m|
             m.enum "."
             m.choice "          Make a Request", -> {Item.rrequest_item(self)}  #2
-            m.choice "          Cancel a Request", -> {self.cancel_request} #3
-            m.choice "          Modify a Request", -> {self.update_request}#4
+            m.choice "          Cancel a Request", -> {self.modify_request("cancel")} #3
+            m.choice "          Modify a Request", -> {self.modify_request("modify")}#4
             m.choice "          View all my Requests", -> {self.view_requests}
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
             m.choice "          Quit".red, ->{Interface.quit}
