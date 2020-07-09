@@ -1,6 +1,8 @@
 class User < ActiveRecord::Base
     has_many :transactions
     has_many :items, through: :transactions
+    has_many :donations, :class_name => 'Transaction', :foreign_key => 'donor_id'
+    has_many :requests, :class_name => 'Transaction', :foreign_key => 'requester_id'
 
     @@prompt=TTY::Prompt.new
 
@@ -93,7 +95,6 @@ class User < ActiveRecord::Base
                     end
                 end
 
-
             when "cancel"
 
                 puts "CANCELLING REQUEST"
@@ -147,8 +148,10 @@ class User < ActiveRecord::Base
     end
 
     def view_requests
+        binding.pry
         # transactions = Transaction.where(user_id: self.id, kind:"Request")
-        transactions = Transaction.where(requester_id: self.id, kind:"Request")
+        transactions = Transaction.where(requester_id: self.id, kind:"Request").take
+        binding.pry
         Transaction.render_table(transactions)
         back = @@prompt.select("", ["Back"])
         self.requester_menu

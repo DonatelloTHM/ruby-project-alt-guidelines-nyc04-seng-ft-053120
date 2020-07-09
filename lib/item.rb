@@ -80,7 +80,6 @@ class Item < ActiveRecord::Base
             quantity: item.quantity,
             kind: "Donation"
         )
-        binding.pry
         self.succesful_donation(user)
     end
     
@@ -248,18 +247,13 @@ class Item < ActiveRecord::Base
             # modified Transaction class to have donor and requester ids
             transaction = Transaction.create(
                 requester_id: user.id,
-                status: "New",
+                status: "Open",
                 item_id: item.id,
                 quantity: item.quantity,
                 kind: "Request"
             )
 
-            binding.pry
-            # user.transactions.push(transaction)
-            # item.transactions.push(transaction)
-
         else
-            binding.pry
             # item found
             # TO ADD: user option to modify existing request if created by user
             puts "Found Matching Request"
@@ -299,8 +293,6 @@ class Item < ActiveRecord::Base
         available_donations_selection_list = available_donated_transactions.map{ |transaction| 
             "#{transaction.item.name}"
         }.uniq.unshift("CAN'T FIND WHAT I'M LOOKING FOR".colorize(:red))
-
-        # binding.pry
 
         puts "What item are you interested in?"
 
