@@ -13,7 +13,7 @@ class User < ActiveRecord::Base
             w.choice "          Requester", -> {user.requester_menu}
             w.choice "          Settings",->{user.options_menu}
             w.choice "          Log out", -> {Interface.first_menu}
-            w.choice "          Quit".red, -> {Interface.quit}
+            w.choice "          Quit".red, -> {Interface.quit(user)}
         end
         # return nil
     end
@@ -161,7 +161,7 @@ class User < ActiveRecord::Base
             m.choice "          Modify a Request", -> {self.request("modify")}#4
             m.choice "          View all my Requests", -> {self.view_requests}
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
-            m.choice "          Quit".red, ->{Interface.quit}
+            m.choice "          Quit".red, ->{Interface.quit(self)}
         end
         puts""
     end
@@ -177,7 +177,7 @@ class User < ActiveRecord::Base
             m.choice "          Update quantity", -> {self.update_quantity}#4
             m.choice "          View all my Donations", -> {self.view_donations}
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
-            m.choice "          Quit".red, ->{Interface.quit}
+            m.choice "          Quit".red, ->{Interface.quit(self)}
         end
         puts""
     end
