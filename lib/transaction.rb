@@ -8,7 +8,6 @@ class Transaction < ActiveRecord::Base
 
     def display
         Transaction.render_table([self])
-        # "#{transaction.kind} #{transaction.status} #{transaction.item.quantity} #{transaction.item.category} #{transaction.item.name} #{transaction.item.description}"
     end
 
     def self.check_for_matching_transaction(transaction)
@@ -35,17 +34,11 @@ class Transaction < ActiveRecord::Base
     #
     def self.render_table(transaction_array)
 
-        binding.pry
-
         table_array = []
 
         transaction_array.each_with_index do |transaction, index|
 
             matched_transaction = Transaction.check_for_matching_transaction(transaction).take
-
-            if (matched_transaction)
-                binding.pry
-            end
 
             table_array << [
                 index+1,
@@ -62,12 +55,8 @@ class Transaction < ActiveRecord::Base
         table = TTY::Table.new ["", "MATCH", "KIND", "STATUS", "QTY", "CATEGORY", "NAME", "DESCRIPTION"], table_array
         puts""
 
-        # puts table.render()
-        # puts table.render(:unicode, indent:8, alignments:[:center, :center, :center],  width:90, padding: [0,1,0,1], resize: true)
-
         puts table.render(
             :unicode, 
-            # indent: 8, 
             alignments: [:left, :left, :left, :left, :center, :left, :left, :left], 
             column_widths: [3, 5, 10, 10, 5, 10, 15, 20], 
             padding: [0,1,0,1]
@@ -75,6 +64,9 @@ class Transaction < ActiveRecord::Base
     end
 
     def self.modify_transaction(transaction)
+        transaction.item.description = @@prompt.ask("Description?", default: transaction.item.description)
+        transaction.item.quantity = @@prompt.ask("Quantity?", default: transaction.item.quantity)
+        transaction.item.category = @@prompt.ask("Category?", default: transaction.item.category)
         return transaction
     end
 

@@ -226,43 +226,40 @@ class Item < ActiveRecord::Base
         # prompt user for item attributes
         prompt_attributes = self.prompt_attributes
 
-        # return item if found with name & category match, otherwise create new item
-        item = Item.find_or_initialize_by(name: prompt_attributes[:name], category: prompt_attributes[:category])
-        
-        if item.id == nil
-            # item not found; creating new item
-            puts "Creating Request"
-            item.quantity = prompt_attributes[:quantity]
-            item.description = prompt_attributes[:description]
-            item.save
+        # return item if found with name, quantity & category match, otherwise create new item
+        item = Item.find_or_initialize_by(
+            name: prompt_attributes[:name], 
+            category: prompt_attributes[:category],
+            quantity: prompt_attributes[:quantity]
+        )
 
-            # transaction = Transaction.create(
-            #     user_id: user.id,
-            #     status: "New",
-            #     kind:"Request",
-            #     item_id: item.id,
-            #     quantity: item.quantity
-            # )
+        if item.id != nil
+            matching_donation = Transaction.where(
+                item_id: item.id
+            ).take
 
-            # modified Transaction class to have donor and requester ids
-            transaction = Transaction.create(
-                requester_id: user.id,
-                status: "Open",
-                item_id: item.id,
-                quantity: item.quantity,
-                kind: "Request"
-            )
-
-        else
-            # item found
-            # TO ADD: user option to modify existing request if created by user
-            puts "Found Matching Request"
-            transaction = Transaction.where(item_id: item.id)
-            # if user wants existing item(s), have user confirm and accept donation
+            if matching_donation != nil && matching_donation.kind == "Donation" && matching_donation.kind == "Donation" && matching_donation.status == "Added"
+                puts "Found Matching Donation"
+                return matching_donation
+            end
         end
 
+        # item not found; creating new item
+        puts "Creating Request"
+        item.quantity = prompt_attributes[:quantity]
+        item.description = prompt_attributes[:description]
+        item.save
+
+        # modified Transaction class to have donor and requester ids
+        transaction = Transaction.create(
+            requester_id: user.id,
+            status: "Open",
+            item_id: item.id,
+            quantity: item.quantity,
+            kind: "Request"
+        )
+
         return transaction
-        # self.succesful_request(transaction)
 
     end
 
@@ -271,13 +268,6 @@ class Item < ActiveRecord::Base
     def self.rrequest_item(user)
 
         Interface.receiver_logo
-
-        # get_donated_transactions = Transaction.where(status:"Added", kind:"Donation")
-
-        # available_donated_transactions = Transaction.where(
-        #     'user_id != ? AND status = ? AND kind = ?', 
-        #     user.id, "Added", "Donation"
-        # )
 
         available_donated_transactions = Transaction.where(
             'donor_id != ? AND  status = ? AND kind = ?', 

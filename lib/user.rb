@@ -27,28 +27,18 @@ class User < ActiveRecord::Base
         self.transactions
     end
 
-    # def self.select_one_transaction_from_array(transaction_array:, per_page: 10, choice: false)
-
     def select_active_request_transaction
-        # transactions = Transaction.where(
-        #     'user_id = ? AND status != ? AND status != ? AND kind = ?', 
-        #     self.id, "Closed", "Cancelled", "Request"
-        # )
         transactions = Transaction.where(
-            'requester_id = ? AND status != ? AND status != ? AND kind = ?', 
-            self.id, "Closed", "Cancelled", "Request"
+            'requester_id = ? AND status != ? AND status != ?', 
+            self.id, "Closed", "Cancelled"
         )
+
         transaction = Interface.select_one_transaction_from_array(transaction_array: transactions)
         return transaction
     end
 
     def select_active_donatation_transaction
         
-        # transactions = Transaction.where(
-        #     "kind = ? AND status = ? AND user_id != ?", 
-        #     "Donation", "Added", self.id
-        # )
-
         transactions = Transaction.where(
             "kind = ? AND status = ? AND donor_id != ?", 
             "Donation", "Added", self.id
@@ -69,73 +59,88 @@ class User < ActiveRecord::Base
 
             when "create"
                 
-                puts "CREATING REQUEST"
                 selected_transaction = select_active_donatation_transaction
 
                 if selected_transaction == "new"
                     # created a new donation
-                    selected_transaction = Item.create_request(self)
-                    selected_transaction.display
+                    new_transaction = Item.create_request(self)
+                    new_transaction.display
                 else
                     # selected an available donation
-                    selected_transaction.display
-                    confirm_reserve_donation = @@prompt.select("RESERVE DONATION?  ", ["Yes", "No", "Back"])
-
-                    if confirm_reserve_donation == "Yes"
-                        selected_transaction.status = "Reserved"
-                        selected_transaction.requester_id = self.id
-                        selected_transaction.save
-                        selected_transaction.display
-                        @@prompt.keypress("Press any key to continue")
-                        self.requester_menu
-                    elsif confirm_reserve_donation == "No"
+                    if selected_transaction == nil
                         self.request("create")
                     else
-                        self.requester_menu
+                        selected_transaction.display
+                        confirm_reserve_donation = @@prompt.select("RESERVE DONATION?  ", ["Yes", "No", "Back"])
+
+                        if confirm_reserve_donation == "Yes"
+                            selected_transaction.status = "Reserved"
+                            selected_transaction.requester_id = self.id
+                            selected_transaction.save
+                            selected_transaction.display
+                            @@prompt.keypress("Press any key to continue")
+                            self.requester_menu
+                        elsif confirm_reserve_donation == "No"
+                            self.request("create")
+                        else
+                            self.requester_menu
+                        end
                     end
                 end
 
             when "cancel"
 
-                puts "CANCELLING REQUEST"
-
                 selected_transaction = select_active_request_transaction
-                selected_transaction.display
 
-                confirm_cancel_transaction = @@prompt.select("CONFIRM CANCEL?  ", ["Yes", "No", "Back"])
-
-                if confirm_cancel_transaction == "Yes"
-                    selected_transaction.status = "Cancelled"
-                    selected_transaction.save
-                    selected_transaction.display
-                    @@prompt.keypress("Press any key to continue")
-                    self.requester_menu
-                elsif confirm_cancel_transaction == "No"
-                    self.request("cancel")
+                if selected_transaction == nil
+                    puts "NO TRANSACTIONS TO CANCEL"
                 else
-                    self.requester_menu
+                    puts "CANCELLING REQUEST"
+                    selected_transaction.display
+
+                    confirm_cancel_transaction = @@prompt.select("CONFIRM CANCEL?  ", ["Yes", "No", "Back"])
+
+                    if confirm_cancel_transaction == "Yes"
+                        selected_transaction.status = "Cancelled"
+                        selected_transaction.save
+                        selected_transaction.display
+                        @@prompt.keypress("Press any key to continue")
+                        self.requester_menu
+                    elsif confirm_cancel_transaction == "No"
+                        self.request("cancel")
+                    else
+                        self.requester_menu
+                    end
                 end
 
             when "modify"
 
-                puts "MODIFYING REQUEST"
-
                 selected_transaction = select_active_request_transaction
-                selected_transaction.display
 
-                modified_transaction = Transaction.modify_transaction(selected_transaction)
-
-                confirm_modify_transaction = @@prompt.select("CONFIRM CHANGES?  ", ["Yes", "No", "Back"])
-
-                if confirm_modify_transaction == "Yes"
-                    modified_transaction.save
-                    modified_transaction.display
-                    @@prompt.keypress("Press any key to continue")
-                    self.requester_menu
-                elsif confirm_modify_transaction == "No"
-                    self.request("modify")
+                if selected_transaction == nil
+                    puts "NO TRANSACTIONS TO MODIFY"
                 else
-                    self.requester_menu
+
+                    puts "MODIFYING REQUEST"
+                    selected_transaction.display
+
+                    modified_transaction = Transaction.modify_transaction(selected_transaction)
+
+                    modified_transaction.display
+
+                    confirm_modify_transaction = @@prompt.select("CONFIRM CHANGES?  ", ["Yes", "No", "Back"])
+
+                    if confirm_modify_transaction == "Yes"
+                        modified_transaction.item.save
+                        modified_transaction.save
+                        modified_transaction.display
+                        @@prompt.keypress("Press any key to continue")
+                        self.requester_menu
+                    elsif confirm_modify_transaction == "No"
+                        self.request("modify")
+                    else
+                        self.requester_menu
+                    end
                 end
 
             else
@@ -148,12 +153,16 @@ class User < ActiveRecord::Base
     end
 
     def view_requests
-        binding.pry
-        # transactions = Transaction.where(user_id: self.id, kind:"Request")
-        transactions = Transaction.where(requester_id: self.id, kind:"Request").take
-        binding.pry
-        Transaction.render_table(transactions)
-        back = @@prompt.select("", ["Back"])
+
+        transactions = Transaction.where(requester_id: self.id)
+
+        if transactions == []
+            puts "\nNO REQUESTS EXIST\n".colorize(:background=>:red)
+        else
+            Transaction.render_table(transactions)
+        end
+
+        @@prompt.keypress("Press any key to continue")
         self.requester_menu
     end
 
