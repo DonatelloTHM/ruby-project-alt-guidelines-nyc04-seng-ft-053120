@@ -7,12 +7,14 @@ class User < ActiveRecord::Base
 
     def self.user_menu(user)
         Interface.logo_no_animation
-        puts"           Choose your window?            "
+        puts"                                                                       "+"● ".green.blink+"Signed In as: "+user.username.colorize(:light_green)
+        puts"            Choose your window?            "
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
             w.choice "          Requester", -> {user.requester_menu}
+            w.choice "          Settings",->{user.options_menu}
             w.choice "          Log out", -> {Interface.first_menu}
-            w.choice "          Quit".red, -> {Interface.quit}
+            w.choice "          Quit".red, -> {Interface.quit(user)}
         end
         # return nil
     end
@@ -172,7 +174,7 @@ class User < ActiveRecord::Base
             m.choice "          Modify a Request", -> {self.request("modify")}#4
             m.choice "          View all my Requests", -> {self.view_requests}
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
-            m.choice "          Quit".red, ->{Interface.quit}
+            m.choice "          Quit".red, ->{Interface.quit(self)}
         end
         puts""
     end
@@ -188,7 +190,7 @@ class User < ActiveRecord::Base
             m.choice "          Update quantity", -> {self.update_quantity}#4
             m.choice "          View all my Donations", -> {self.view_donations}
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
-            m.choice "          Quit".red, ->{Interface.quit}
+            m.choice "          Quit".red, ->{Interface.quit(self)}
         end
         puts""
     end
@@ -201,19 +203,29 @@ class User < ActiveRecord::Base
 
         if(!transactions.empty?)
             puts""
+            if(transactions.length==1)
+                list_number=1
+            else
             puts"           Which item you want to cancel           ".colorize(:background=>:blue)
             self.render_table(transactions)
             puts""
             list_number=self.list_number_validation(transactions)
-
+            end
             self.render_item_correct(transactions[list_number-1])
             
             puts""
-            check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't cancel anything"])
-            if(check_if_correct=="No, change it.")
-                self.cancel_donation
-            elsif(check_if_correct=="Don't cancel anything")
-                self.donator_menu
+            if(transactions.length==1)
+                check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","Don't cancel anything"])
+                if(check_if_correct=="Don't cancel anything")
+                    self.donator_menu
+                end
+            else
+                check_if_correct=@@prompt.select("   Is this the item that you wanted to cancel?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't cancel anything"])
+                if(check_if_correct=="No, change it.")
+                    self.cancel_donation
+                elsif(check_if_correct=="Don't cancel anything")
+                    self.donator_menu
+                end
             end
             cancel_item=Transaction.find(transactions[list_number-1].id)
             cancel_item.status="Canceled"
@@ -245,19 +257,29 @@ class User < ActiveRecord::Base
 
         if(!transactions.empty?)
             puts""
-            puts"           Which item you want to update           ".colorize(:background=>:blue)
-            self.render_table(transactions)
-            puts""
-            list_number=self.list_number_validation(transactions)
-
+            if(transactions.length==1)
+                list_number=1
+            else
+                puts"           Which item you want to update           ".colorize(:background=>:blue)
+                self.render_table(transactions)
+                puts""
+                list_number=self.list_number_validation(transactions)
+            end
             self.render_item_correct(transactions[list_number-1])
             
             puts""
-            check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't update anything"])
-            if(check_if_correct=="No, change it.")
-                self.cancel_donation
-            elsif(check_if_correct=="Don't update anything")
-                self.donator_menu
+            if(transactions.length==1)
+                check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","Don't update anything"])
+                if(check_if_correct=="Don't update anything")
+                    self.donator_menu
+                end
+            else
+                check_if_correct=@@prompt.select("   Is this the item that you wanted to update?  ".colorize(:background=>:blue), ["Yes","No, change it.","Don't update anything"])
+                if(check_if_correct=="No, change it.")
+                    self.cancel_donation
+                elsif(check_if_correct=="Don't update anything")
+                    self.donator_menu
+                end
             end
 
             update_item=Transaction.find(transactions[list_number-1].id)
@@ -292,19 +314,19 @@ class User < ActiveRecord::Base
             table_array=[]
             i=1
             transactions.each do |transaction|
-                table_array<<[" #{i} ".colorize(:light_blue),transaction.item.name,transaction.item.category,transaction.created_at.to_s[0..9]]
+                table_array<<[" #{i} ".colorize(:light_blue),transaction.item.name.colorize(:color => :red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]
                 i+=1 
             end
-            table = TTY::Table.new [ 'List No.','ITEM NAME'.colorize(:color => :green), 'Category','Date Added'], table_array
+            table = TTY::Table.new [ 'List No.'.colorize(:color => :green),'ITEM NAME'.colorize(:color => :green), 'Category'.colorize(:color => :green),'Quantity'.colorize(:color => :green),'Date Added'.colorize(:color => :green)], table_array
             puts""
-            puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:80, padding: [0,1,0,1],resize: true)
+            puts table.render(:unicode,indent:8,alignments:[:center, :center,:center,:center],  width:80, padding: [0,1,0,1],resize: true)
             puts""   
     end
 
     def render_item_correct(transaction)
         Interface.donator_logo
 
-            table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category','Quantity','Date Added'], [[transaction.item.name.colorize(:red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]]
+            table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category'.colorize(:color => :green),'Quantity'.colorize(:color => :green),'Date Added'.colorize(:color => :green)], [[transaction.item.name.colorize(:red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]]
             puts""
             puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:90, padding: [0,1,0,1],resize: true)
             puts""
@@ -334,5 +356,115 @@ class User < ActiveRecord::Base
             end
         quantity
     end
+
+    def options_menu
+        Interface.logo_no_animation
+        
+        @@prompt.select("",active_color: :green) do |w|
+            w.choice "  Change your name", -> {self.change_name}
+            w.choice "  Change your address", -> {self.change_address}
+            w.choice "  Change your password",->{self.change_password}
+            w.choice "  Go Back", -> {User.user_menu(self)}
+            w.choice "  Delete Account".red, -> {self.delete_account}
+        end
+
+        
+
+
+    end
+
+    def change_name
+        Interface.logo_no_animation
+        puts "                     "+"      What's your new name?     "
+        puts "                     _________________________________".colorize(:red)
+        changed_name=@@prompt.ask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
+        rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Save"
+            w.choice "          No, Go back", -> {self.options_menu}
+        end
+            self.name=changed_name
+            self.save
+            self.options_menu
+    end
+
+    def change_address
+        Interface.logo_no_animation
+        puts "                     "+"      What's your new address?     "
+        puts "                     ____________________________________".colorize(:red)
+        changed_address=@@prompt.ask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
+        rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Save"
+            w.choice "          No, Go back", -> {self.options_menu}
+        end
+            self.address=changed_address
+            self.save
+            self.options_menu
+    end
+
+    def change_password
+        Interface.logo_no_animation
+        puts "                     "+"      What's your current password?     "
+        puts "                     ___________________________________________".colorize(:red)
+        current_password=@@prompt.mask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
+        
+        if (self.password != current_password)
+            puts"                     "+"          WRONG PASSWORD         ".colorize(:background=>:light_red)
+            rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Try again", -> {self.change_password}
+            w.choice "          Go back", -> {self.options_menu}
+            end
+        else
+            puts""
+            puts "                     "+"      Type your new password?     "
+            puts "                     ___________________________________________".colorize(:red)
+            new_password=@@prompt.mask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)do |q|
+            q.validate{|input| input.length >= 6}
+            q.messages[:valid?] = 'Password should be 6 or more characters long'
+            end
+
+            choices= @@prompt.select("     ",active_color: :green) do |w|
+                w.choice "          Save"
+                w.choice "          No, Go back", -> {self.options_menu}
+            end
+            
+            self.password=new_password
+            self.save
+            self.options_menu
+
+        end
+    end
+
+    def delete_account
+        Interface.logo_no_animation
+        puts "                     "+"      Typer your password     "
+        puts "                     ______________________________________".colorize(:red)
+        current_password=@@prompt.mask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
+        
+        if (self.password != current_password)
+            puts"                     "+"          WRONG PASSWORD         ".colorize(:background=>:light_red)
+            rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Try again", -> {self.change_password}
+            w.choice "          Go back", -> {self.options_menu}
+            end
+        else
+            Interface.logo_no_animation
+            puts""
+            puts"               "+"                                                                           ".colorize(:background=>:light_red)                                                                                       
+            puts"               "+"          IF YOU CONTINUE THIS ACCOUNT WILL BE DELETED PERMANENTLY         ".colorize(:background=>:light_red)
+            puts"               "+"                                                                           ".colorize(:background=>:light_red)
+            puts""
+            choices= @@prompt.select("     ",active_color: :green) do |w|
+                w.choice "          Changed my mind, Go back", -> {self.options_menu}
+                w.choice "          DELETE ACCOUNT".colorize(:red)
+            end
+            Transaction.where(user_id:self.id,status:"Completed").update_all(user_id:nil)
+            Transaction.where(user_id:self).destroy_all
+            self.destroy
+            Interface.first_menu
+        end
+    end
+
+
+
 
 end    

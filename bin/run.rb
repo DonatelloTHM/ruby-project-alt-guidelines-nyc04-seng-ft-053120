@@ -1,6 +1,6 @@
 require_relative '../config/environment'
 Interface.first_menu
-user=User.find(47)
+user=User.find(7)
 User.user_menu(user)
 
 def animation
