@@ -6,7 +6,8 @@ class User < ActiveRecord::Base
 
     def self.user_menu(user)
         Interface.logo_no_animation
-        puts"           Choose your window?            "
+        puts"                                                                       "+"● ".green.blink+"Signed In as: "+user.username.colorize(:light_green)
+        puts"            Choose your window?            "
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
             w.choice "          Requester", -> {user.requester_menu}

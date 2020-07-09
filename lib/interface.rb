@@ -168,7 +168,7 @@
         puts""
         puts""
         puts "                     "+"      What's your Username?     ".colorize(:background=>:red)
-        username=@@prompt.ask("                     "+" ? ".colorize(:color=>:red,:background=>:white),required: true)
+        username=@@prompt.ask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
         user = User.where(username: username).take
         if user
            self.check_password(user)
@@ -189,7 +189,7 @@
         puts "                     "+"      What's your Password?     ".colorize(:background=>:red)
             password = @@prompt.mask("                     "+" # ".colorize(:color=>:red,:background=>:white),required: true)
             if password == user.password
-                self.animation
+                self.animation(2)
                 self.welcome_user_animation(user)
                 User.user_menu(user)
             else    
@@ -218,7 +218,7 @@
       self.signup_screen_banner
       puts""
       puts "                        "+"         Username         ".colorize(:background=>:red)
-        username=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
+        username=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true) do |q|
             q.validate{|input| input.length >= 3}
             q.messages[:valid?] = 'Username should be 3 or more characters long'
         end
@@ -226,7 +226,7 @@
         if user
                 self.logo_no_animation
                 self.signup_screen_banner
-                puts"       User '#{username} already exists, try another one.      ".colorize(:background=>:red)
+                puts"       User '#{username}' already exists, try another one.      ".colorize(:background=>:red)
                 rollback= @@prompt.select("     ",active_color: :green) do |w|
                         w.choice "          Try Again", -> {self.register}
                         w.choice "          Login Screen", -> {self.login}
@@ -245,8 +245,9 @@
         password=self.register_password
         name=self.name_of_user
         full_address=self.full_address
-        User.create(username:username,password:password,name:name,address:full_address)
-        puts""
+        new_user=User.create(username:username,password:password,name:name,address:full_address)
+        self.animation(1)
+        self.welcome_user_animation(new_user)
     end
 
     def self.register_password
@@ -256,21 +257,21 @@
       self.signup_screen_banner
       puts""
       puts "                        "+"         Password         ".colorize(:background=>:red)
-        password1=@@prompt.mask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
+        password1=@@prompt.mask("                        "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true) do |q|
             q.validate{|input| input.length >= 6}
             q.messages[:valid?] = 'Password should be 6 or more characters long'
         end
         puts""
         puts "                        "+"     Retype Password      ".colorize(:background=>:red)
-        password2=@@prompt.mask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
+        password2=@@prompt.mask("                        "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true) do |q|
         end
         break if password1 == password2
           puts""
-          puts"       Your password doesn't match , Try again!      ".colorize(:background=>:red)
+          puts"         "+"       Your password doesn't match , Try again!      ".colorize(:background=>:blue)
           sleep(2)
       end 
        puts""
-        puts"         Are you happy with your password?       ".colorize(:background=>:green)
+        puts"         "+"         Are you happy with your password?       ".colorize(:background=>:green)
           rollback= @@prompt.select("     ",active_color: :green) do |w|
             w.choice "          Yes"
             w.choice "          No, I want to change it", -> {self.register_password}
@@ -287,9 +288,9 @@
       self.signup_screen_banner
       puts""
       puts "                        "+"         Name         ".colorize(:background=>:red)
-        name=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true)
+        name=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
         puts""
-        puts"         Is #{name} your name?       ".colorize(:background=>:green)
+        puts"         "+"         Is #{name} your name?       ".colorize(:background=>:green)
           rollback= @@prompt.select("     ",active_color: :green) do |w|
             w.choice "          Yes"
             w.choice "          No, I want to change it", -> {self.name_of_user}
@@ -305,9 +306,9 @@
       self.signup_screen_banner
       puts""
       puts "                        "+"        Type your full address       ".colorize(:background=>:red)
-        full_address=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true)
+        full_address=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
         puts""
-        puts"   Your address is '#{full_address}' , correct?  ".colorize(:background=>:green)
+        puts"         "+"   Your address is '#{full_address}' , correct?  ".colorize(:background=>:green)
           rollback= @@prompt.select("     ",active_color: :green) do |w|
             w.choice "          Yes"
             w.choice "          No, I want to change it", -> {self.full_address}
@@ -441,7 +442,7 @@ puts""
 
 
 
-    def self.animation
+    def self.animation(n_times)
         animacioni=[]
         frame_0="
                                                                                                             
@@ -1317,15 +1318,15 @@ puts""
         a=[:cyan,:light_green]        
         system("clear")                                                                                           
         animacioni=[frame_0,frame_1,frame_2,frame_3,frame_4,frame_5,frame_6,frame_7,frame_8,frame_9,frame_10,frame_11,frame_12,frame_13,frame_14,frame_15,frame_16,frame_17,frame_18,frame_19,frame_20,frame_21,frame_22,frame_23,frame_24,frame_25,frame_26,frame_27,frame_28,frame_29]
-        info=["Acquiring the data for the User","Sending back the acquired data "]
+        info=["Communicating with the server","Sending back the acquired data "]
         b=0
-        2.times do
+        n_times.times do
     
             i = 1
             while i < 3
                 animacioni.each do |frame|
                     puts frame.colorize(a[b])
-                    puts "          "+"                            #{+info[b]}                            ".colorize(:color => :white, :background => :blue)
+                    puts "            "+"                                #{+info[b]}                             ".colorize(:color => :white, :background => :blue)
                     sleep(0.1)
                     system("clear")
                     i += 1
@@ -1340,13 +1341,12 @@ puts""
         def self.welcome_user_animation(user)
             ngjyra=[:cyan,:light_green,:blue,:magenta,:red,:yellow,:green,:blue,:light_blue,:light_green]
                 ffr=0
-                7.times do
+                4.times do
                 puts ""
                 puts ""
                 a=Artii::Base.new :font => 'slant'
-                puts a.asciify("    Welcome")
-                puts a.asciify("    back")
-                ds=Artii::Base.new :font => 'roman'
+                puts a.asciify("  Welcome")
+                ds=Artii::Base.new :font => 'slant'
                 puts""
                 puts ds.asciify("     "+user.name).colorize(ngjyra[ffr])
                 sleep (0.3)
@@ -1357,12 +1357,12 @@ puts""
 
         def self.login_screen_banner
         # puts "                          "+"                       ".colorize(:color => :white,:background => :green)
-        puts "                          ".colorize(:color => :black, :background => :white)+"     LOGIN SCREEN      ".colorize(:color => :black,:background => :green)+"                          ".colorize(:background => :white)
+        puts "                          ".colorize(:color => :black, :background => :light_white)+"     LOGIN SCREEN      ".colorize(:color => :black,:background => :green)+"                          ".colorize(:background => :light_white)
         end
 
         def self.signup_screen_banner
           # puts "                          "+"                       ".colorize(:color => :white,:background => :green)
-          puts "                          ".colorize(:color => :black, :background => :white)+"     SIGNUP SCREEN     ".colorize(:color => :black,:background => :green)+"                          ".colorize(:background => :white)
+          puts "                          ".colorize(:color => :black, :background => :light_white)+"     SIGNUP SCREEN     ".colorize(:color => :black,:background => :green)+"                          ".colorize(:background => :light_white)
           end
 end
 
