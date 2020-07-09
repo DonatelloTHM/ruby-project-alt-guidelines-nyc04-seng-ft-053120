@@ -299,19 +299,19 @@ class User < ActiveRecord::Base
             table_array=[]
             i=1
             transactions.each do |transaction|
-                table_array<<[" #{i} ".colorize(:light_blue),transaction.item.name,transaction.item.category,transaction.created_at.to_s[0..9]]
+                table_array<<[" #{i} ".colorize(:light_blue),transaction.item.name.colorize(:color => :red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]
                 i+=1 
             end
-            table = TTY::Table.new [ 'List No.','ITEM NAME'.colorize(:color => :green), 'Category','Date Added'], table_array
+            table = TTY::Table.new [ 'List No.'.colorize(:color => :green),'ITEM NAME'.colorize(:color => :green), 'Category'.colorize(:color => :green),'Quantity'.colorize(:color => :green),'Date Added'.colorize(:color => :green)], table_array
             puts""
-            puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:80, padding: [0,1,0,1],resize: true)
+            puts table.render(:unicode,indent:8,alignments:[:center, :center,:center,:center],  width:80, padding: [0,1,0,1],resize: true)
             puts""   
     end
 
     def render_item_correct(transaction)
         Interface.donator_logo
 
-            table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category','Quantity','Date Added'], [[transaction.item.name.colorize(:red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]]
+            table = TTY::Table.new ['ITEM NAME'.colorize(:color => :green),'Category'.colorize(:color => :green),'Quantity'.colorize(:color => :green),'Date Added'.colorize(:color => :green)], [[transaction.item.name.colorize(:red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]]
             puts""
             puts table.render(:unicode,indent:8,alignments:[:center, :center,:center],  width:90, padding: [0,1,0,1],resize: true)
             puts""
