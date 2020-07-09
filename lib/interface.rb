@@ -146,7 +146,7 @@
         if(login_register=="               Login                ")
             self.login
         elsif(login_register=="              Register             ")
-            self.signup
+            self.register
         else
             self.quit     #build this method
         end
@@ -225,6 +225,7 @@
                         w.choice "          Quit".red, -> {Interface.quit}
                 end
         else
+          puts""
           puts"       You chose  '#{username}' as your username, want to continue?      ".colorize(:background=>:green)
           rollback= @@prompt.select("     ",active_color: :green) do |w|
             w.choice "          Yes"
@@ -234,10 +235,15 @@
           end
         end
         password=self.register_password
-        binding.pry
+        name=self.name_of_user
+        full_address=self.full_address
+        User.create(username:username,password:password,name:name,address:full_address)
+        puts""
     end
 
     def self.register_password
+      password1=""
+      loop do
       self.logo_no_animation
       self.signup_screen_banner
       puts""
@@ -250,11 +256,12 @@
         puts "                        "+"     Retype Password      ".colorize(:background=>:red)
         password2=@@prompt.mask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
         end
-        if password1 != password2
+        break if password1 == password2
+          puts""
           puts"       Your password doesn't match , Try again!      ".colorize(:background=>:red)
           sleep(2)
-          self.register_password
-        end
+      end 
+       puts""
         puts"         Are you happy with your password?       ".colorize(:background=>:green)
           rollback= @@prompt.select("     ",active_color: :green) do |w|
             w.choice "          Yes"
@@ -265,6 +272,48 @@
           password1
         
     end
+    
+    def self.name_of_user
+
+      self.logo_no_animation
+      self.signup_screen_banner
+      puts""
+      puts "                        "+"         Name         ".colorize(:background=>:red)
+        name=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true)
+        puts""
+        puts"         Is #{name} your name?       ".colorize(:background=>:green)
+          rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Yes"
+            w.choice "          No, I want to change it", -> {self.name_of_user}
+            w.choice "          Login Screen", -> {self.login}
+            w.choice "          Quit".red, -> {Interface.quit}  
+          end
+          name
+    end
+
+    def self.full_address
+
+      self.logo_no_animation
+      self.signup_screen_banner
+      puts""
+      puts "                        "+"        Type your full address       ".colorize(:background=>:red)
+        full_address=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true)
+        puts""
+        puts"   Your address is '#{full_address}' , correct?  ".colorize(:background=>:green)
+          rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Yes"
+            w.choice "          No, I want to change it", -> {self.full_address}
+            w.choice "          Login Screen", -> {self.login}
+            w.choice "          Quit".red, -> {Interface.quit}  
+          end
+        full_address
+    end
+
+
+
+
+
+
 
 
 
@@ -1301,12 +1350,12 @@ puts""
         end
 
         def self.login_screen_banner
-        puts "                          "+"                       ".colorize(:color => :white,:background => :green)
+        # puts "                          "+"                       ".colorize(:color => :white,:background => :green)
         puts "                          ".colorize(:color => :black, :background => :white)+"     LOGIN SCREEN      ".colorize(:color => :black,:background => :green)+"                          ".colorize(:background => :white)
         end
 
         def self.signup_screen_banner
-          puts "                          "+"                       ".colorize(:color => :white,:background => :green)
+          # puts "                          "+"                       ".colorize(:color => :white,:background => :green)
           puts "                          ".colorize(:color => :black, :background => :white)+"     SIGNUP SCREEN     ".colorize(:color => :black,:background => :green)+"                          ".colorize(:background => :white)
           end
 end

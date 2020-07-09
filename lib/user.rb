@@ -5,11 +5,12 @@ class User < ActiveRecord::Base
     @@prompt=TTY::Prompt.new
 
     def self.user_menu(user)
-        Interface.logo
+        Interface.logo_no_animation
         puts"           Choose your window?            "
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
             w.choice "          Requester", -> {user.requester_menu}
+            w.choice "          Log out", -> {Interface.first_menu}
             w.choice "          Quit".red, -> {Interface.quit}
         end
         # return nil
