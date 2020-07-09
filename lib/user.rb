@@ -11,6 +11,7 @@ class User < ActiveRecord::Base
         @@prompt.select("",active_color: :green) do |w|
             w.choice "          Donator", -> {user.donator_menu}
             w.choice "          Requester", -> {user.requester_menu}
+            w.choice "          Settings",->{user.options_menu}
             w.choice "          Log out", -> {Interface.first_menu}
             w.choice "          Quit".red, -> {Interface.quit}
         end
@@ -340,5 +341,115 @@ class User < ActiveRecord::Base
             end
         quantity
     end
+
+    def options_menu
+        Interface.logo_no_animation
+        
+        @@prompt.select("",active_color: :green) do |w|
+            w.choice "  Change your name", -> {self.change_name}
+            w.choice "  Change your address", -> {self.change_address}
+            w.choice "  Change your password",->{self.change_password}
+            w.choice "  Go Back", -> {User.user_menu(self)}
+            w.choice "  Delete Account".red, -> {self.delete_account}
+        end
+
+        
+
+
+    end
+
+    def change_name
+        Interface.logo_no_animation
+        puts "                     "+"      What's your new name?     "
+        puts "                     _________________________________".colorize(:red)
+        changed_name=@@prompt.ask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
+        rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Save"
+            w.choice "          No, Go back", -> {self.options_menu}
+        end
+            self.name=changed_name
+            self.save
+            self.options_menu
+    end
+
+    def change_address
+        Interface.logo_no_animation
+        puts "                     "+"      What's your new address?     "
+        puts "                     ____________________________________".colorize(:red)
+        changed_address=@@prompt.ask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
+        rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Save"
+            w.choice "          No, Go back", -> {self.options_menu}
+        end
+            self.address=changed_address
+            self.save
+            self.options_menu
+    end
+
+    def change_password
+        Interface.logo_no_animation
+        puts "                     "+"      What's your current password?     "
+        puts "                     ___________________________________________".colorize(:red)
+        current_password=@@prompt.mask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
+        
+        if (self.password != current_password)
+            puts"                     "+"          WRONG PASSWORD         ".colorize(:background=>:light_red)
+            rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Try again", -> {self.change_password}
+            w.choice "          Go back", -> {self.options_menu}
+            end
+        else
+            puts""
+            puts "                     "+"      Type your new password?     "
+            puts "                     ___________________________________________".colorize(:red)
+            new_password=@@prompt.mask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)do |q|
+            q.validate{|input| input.length >= 6}
+            q.messages[:valid?] = 'Password should be 6 or more characters long'
+            end
+
+            choices= @@prompt.select("     ",active_color: :green) do |w|
+                w.choice "          Save"
+                w.choice "          No, Go back", -> {self.options_menu}
+            end
+            
+            self.password=new_password
+            self.save
+            self.options_menu
+
+        end
+    end
+
+    def delete_account
+        Interface.logo_no_animation
+        puts "                     "+"      Typer your password     "
+        puts "                     ______________________________________".colorize(:red)
+        current_password=@@prompt.mask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
+        
+        if (self.password != current_password)
+            puts"                     "+"          WRONG PASSWORD         ".colorize(:background=>:light_red)
+            rollback= @@prompt.select("     ",active_color: :green) do |w|
+            w.choice "          Try again", -> {self.change_password}
+            w.choice "          Go back", -> {self.options_menu}
+            end
+        else
+            Interface.logo_no_animation
+            puts""
+            puts"               "+"                                                                           ".colorize(:background=>:light_red)                                                                                       
+            puts"               "+"          IF YOU CONTINUE THIS ACCOUNT WILL BE DELETED PERMANENTLY         ".colorize(:background=>:light_red)
+            puts"               "+"                                                                           ".colorize(:background=>:light_red)
+            puts""
+            choices= @@prompt.select("     ",active_color: :green) do |w|
+                w.choice "          Changed my mind, Go back", -> {self.options_menu}
+                w.choice "          DELETE ACCOUNT".colorize(:red)
+            end
+            Transaction.where(user_id:self.id,status:"Completed").update_all(user_id:nil)
+            Transaction.where(user_id:self).destroy_all
+            self.destroy
+            Interface.first_menu
+        end
+    end
+
+
+
 
 end    
