@@ -436,7 +436,7 @@ class User < ActiveRecord::Base
 
     def delete_account
         Interface.logo_no_animation
-        puts "                     "+"      Typer your password     "
+        puts "                     "+"      Type your password     "
         puts "                     ______________________________________".colorize(:red)
         current_password=@@prompt.mask("                     "+" ? ".colorize(:color=>:red,:background=>:light_white),required: true)
         
@@ -457,13 +457,69 @@ class User < ActiveRecord::Base
                 w.choice "          Changed my mind, Go back", -> {self.options_menu}
                 w.choice "          DELETE ACCOUNT".colorize(:red)
             end
-            Transaction.where(user_id:self.id,status:"Completed").update_all(user_id:nil)
-            Transaction.where(user_id:self).destroy_all
+            Transaction.where(donor_id:self.id,status:"Completed").update_all(donor_id:nil)
+            Transaction.where(donor_id:self).destroy_all
             self.destroy
             Interface.first_menu
         end
     end
 
+
+
+    def view_donations
+        Interface.donator_logo
+        added=Transaction.where(donor_id:self.id,status:"Added")
+        reserved=Transaction.where(donor_id:self.id,status:"Reserved")
+        completed=Transaction.where(donor_id:self.id,status:"Completed")
+        show_all=Transaction.where(donor_id:self.id)
+
+        puts"            Which transactions do you want to see?            "
+        @@prompt.select("",active_color: :green) do |w|
+            w.choice "          Unclaimed donations", -> {self.render_table_all_donations(added)}
+            w.choice "          Reserved donations", -> {self.render_table_all_donations(reserved)}
+            w.choice "          Completed donations",->{self.render_table_all_donations(completed)}
+            w.choice "          All donations", -> {self.render_table_all_donations(show_all)}
+            w.choice "          Go back".red, -> {self.donator_menu}
+        end
+
+        binding.pry
+
+
+    end
+
+
+    def render_table_all_donations(transactions)
+        Interface.donator_logo
+        puts""
+        if(transactions.empty?)
+        puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                             THERE ARE NO DONATIONS TO SHOW                            ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+            puts"                                                                                       ".colorize(:background=>:blue)
+        
+        else
+            table_array=[]
+        i=1
+        transactions.each do |transaction|
+            table_array<<[" #{i} ".colorize(:light_blue),transaction.status,transaction.item.name.colorize(:color => :red),transaction.item.category,transaction.quantity,transaction.created_at.to_s[0..9]]
+            i+=1 
+        end
+        table = TTY::Table.new [ 'List No.'.colorize(:color => :green),'STATUS'.colorize(:color => :green),'ITEM NAME'.colorize(:color => :green), 'Category'.colorize(:color => :green),'Quantity'.colorize(:color => :green),'Date Added'.colorize(:color => :green)], table_array
+        puts""
+        puts table.render(:unicode,indent:8,alignments:[:center, :center,:center,:center],  width:80, padding: [0,1,0,1],resize: true)
+        puts""  
+    end
+    puts""
+        puts"            Choose your window?            ".colorize(:red)
+        @@prompt.select("",active_color: :green) do |w|
+            w.choice "          Go back", -> {self.donator_menu}
+            w.choice "          Donator Menu", -> {self.donator_menu}
+            w.choice "          Main menu",->{self.user_menu}
+        end
+
+
+    end
 
 
 
