@@ -1,6 +1,5 @@
 class User < ActiveRecord::Base
-    has_many :transactions
-    has_many :items, through: :transactions
+    has_many :items, :class_name => 'Transaction', :foreign_key => 'item_id'
     has_many :donations, :class_name => 'Transaction', :foreign_key => 'donor_id'
     has_many :requests, :class_name => 'Transaction', :foreign_key => 'requester_id'
 
@@ -21,10 +20,6 @@ class User < ActiveRecord::Base
     # display using table_print
     def display
         tp self
-    end
-    
-    def list_transactions
-        self.transactions
     end
 
     def select_active_request_transaction
@@ -200,7 +195,9 @@ class User < ActiveRecord::Base
 
     def cancel_donation
         Interface.donator_logo
-        transactions=self.transactions.where(status:"Added",kind:"Donation")
+
+        # transactions = self.transactions.where(status:"Added",kind:"Donation")
+        transactions = self.donations.where(status:"Added",kind:"Donation")
 
         if(!transactions.empty?)
             puts""
@@ -244,7 +241,7 @@ class User < ActiveRecord::Base
 
     def update_quantity
         Interface.donator_logo
-        transactions=self.transactions.where(status:"Added",kind:"Donation")
+        transactions=self.donations.where(status:"Added",kind:"Donation")
 
         if(!transactions.empty?)
             puts""

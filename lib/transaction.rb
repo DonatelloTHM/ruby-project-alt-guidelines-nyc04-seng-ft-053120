@@ -1,6 +1,5 @@
 class Transaction < ActiveRecord::Base
-    # belongs_to :user
-    belongs_to :item
+    belongs_to :item, :class_name => 'Item'
     belongs_to :donor, :class_name => 'User'
     belongs_to :requester, :class_name => 'User'
 

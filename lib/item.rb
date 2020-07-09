@@ -1,7 +1,9 @@
 class Item < ActiveRecord::Base
-    has_many :transactions
-    has_many :users, through: :transactions
-    
+    has_one :transactions_as_donation, :foreign_key => 'donor_id', :class_name => 'User'
+    has_one :transactions_as_request, :foreign_key => 'requester_id', :class_name => 'User'
+    has_one :donors, through: :transactions_as_donation
+    has_one :requesters, through: :transactions_as_request
+
     @@prompt=TTY::Prompt.new
     @@ascii=Artii::Base.new :font => 'slant'
 
@@ -50,6 +52,7 @@ class Item < ActiveRecord::Base
                     quantity: new_quantity,
                     kind: "Donation"
                 )
+
                 self.succesful_donation(user)
 
             else
@@ -137,7 +140,7 @@ class Item < ActiveRecord::Base
         puts @@ascii.asciify(user.name).colorize(:cyan)
         puts""
         puts"           Your donation was succesful.            ".colorize(:background=>:blue)
-        sleep(5)
+        # sleep(5)
         user.donator_menu
     end
 
@@ -160,7 +163,7 @@ class Item < ActiveRecord::Base
 
         transaction.display
 
-        sleep(5)
+        # sleep(5)
         transaction.user.requester_menu
     end
 
