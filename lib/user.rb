@@ -28,8 +28,12 @@ class User < ActiveRecord::Base
     # def self.select_one_transaction_from_array(transaction_array:, per_page: 10, choice: false)
 
     def select_active_request_transaction
+        # transactions = Transaction.where(
+        #     'user_id = ? AND status != ? AND status != ? AND kind = ?', 
+        #     self.id, "Closed", "Cancelled", "Request"
+        # )
         transactions = Transaction.where(
-            'user_id = ? AND status != ? AND status != ? AND kind = ?', 
+            'requester_id = ? AND status != ? AND status != ? AND kind = ?', 
             self.id, "Closed", "Cancelled", "Request"
         )
         transaction = Interface.select_one_transaction_from_array(transaction_array: transactions)
@@ -37,8 +41,14 @@ class User < ActiveRecord::Base
     end
 
     def select_active_donatation_transaction
+        
+        # transactions = Transaction.where(
+        #     "kind = ? AND status = ? AND user_id != ?", 
+        #     "Donation", "Added", self.id
+        # )
+
         transactions = Transaction.where(
-            "kind = ? AND status = ? AND user_id != ?", 
+            "kind = ? AND status = ? AND donor_id != ?", 
             "Donation", "Added", self.id
         )
 
@@ -71,9 +81,10 @@ class User < ActiveRecord::Base
 
                     if confirm_reserve_donation == "Yes"
                         selected_transaction.status = "Reserved"
+                        selected_transaction.requester_id = self.id
                         selected_transaction.save
                         selected_transaction.display
-                        sleep(5)
+                        @@prompt.keypress("Press any key to continue")
                         self.requester_menu
                     elsif confirm_reserve_donation == "No"
                         self.request("create")
@@ -96,7 +107,7 @@ class User < ActiveRecord::Base
                     selected_transaction.status = "Cancelled"
                     selected_transaction.save
                     selected_transaction.display
-                    sleep(5)
+                    @@prompt.keypress("Press any key to continue")
                     self.requester_menu
                 elsif confirm_cancel_transaction == "No"
                     self.request("cancel")
@@ -118,7 +129,7 @@ class User < ActiveRecord::Base
                 if confirm_modify_transaction == "Yes"
                     modified_transaction.save
                     modified_transaction.display
-                    sleep(5)
+                    @@prompt.keypress("Press any key to continue")
                     self.requester_menu
                 elsif confirm_modify_transaction == "No"
                     self.request("modify")
@@ -131,21 +142,16 @@ class User < ActiveRecord::Base
                 return nil
         end
 
-        sleep(5)
+        @@prompt.keypress("Press any key to continue")
         self.requester_menu
     end
 
     def view_requests
-        transactions = Transaction.where(user_id: self.id, kind:"Request")
+        # transactions = Transaction.where(user_id: self.id, kind:"Request")
+        transactions = Transaction.where(requester_id: self.id, kind:"Request")
         Transaction.render_table(transactions)
         back = @@prompt.select("", ["Back"])
         self.requester_menu
-    end
-
-    def find_transaction_by_item_name(item_name)
-        transaction = Transaction.where(user_id: self.id).take
-        transaction.display
-        return transaction
     end
 
     def requester_menu

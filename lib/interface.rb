@@ -163,8 +163,8 @@
 
 
     def self.login
-        self.logo_no_animation
-        self.login_screen_banner
+        # self.logo_no_animation
+        # self.login_screen_banner
         puts""
         puts""
         puts "                     "+"      What's your Username?     ".colorize(:background=>:red)
@@ -173,8 +173,8 @@
         if user
            self.check_password(user)
         else
-            self.logo_no_animation
-            self.login_screen_banner
+            # self.logo_no_animation
+            # self.login_screen_banner
            puts"       You typed '#{username}', which can't be found anywhere in our userbase         ".colorize(:background=>:red)
             rollback= @@prompt.select("     ",active_color: :green) do |w|
                     w.choice "          Try Again", -> {self.login}
@@ -189,8 +189,8 @@
         puts "                     "+"      What's your Password?     ".colorize(:background=>:red)
             password = @@prompt.mask("                     "+" # ".colorize(:color=>:red,:background=>:white),required: true)
             if password == user.password
-                self.animation
-                self.welcome_user_animation(user)
+                # self.animation
+                # self.welcome_user_animation(user)
                 User.user_menu(user)
             else    
                 self.logo_no_animation
@@ -206,16 +206,16 @@
     end
 
     def self.password_try_again(user)
-        self.logo_no_animation
-        self.login_screen_banner
+        # self.logo_no_animation
+        # self.login_screen_banner
         puts""
         self.check_password(user)
     end
 
 
     def self.register
-      self.logo_no_animation
-      self.signup_screen_banner
+      # self.logo_no_animation
+      # self.signup_screen_banner
       puts""
       puts "                        "+"         Username         ".colorize(:background=>:red)
         username=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
@@ -224,8 +224,8 @@
         end
         user = User.where(username: username).take
         if user
-                self.logo_no_animation
-                self.signup_screen_banner
+                # self.logo_no_animation
+                # self.signup_screen_banner
                 puts"       User '#{username} already exists, try another one.      ".colorize(:background=>:red)
                 rollback= @@prompt.select("     ",active_color: :green) do |w|
                         w.choice "          Try Again", -> {self.register}
@@ -252,8 +252,8 @@
     def self.register_password
       password1=""
       loop do
-      self.logo_no_animation
-      self.signup_screen_banner
+      # self.logo_no_animation
+      # self.signup_screen_banner
       puts""
       puts "                        "+"         Password         ".colorize(:background=>:red)
         password1=@@prompt.mask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true) do |q|
@@ -283,8 +283,8 @@
     
     def self.name_of_user
 
-      self.logo_no_animation
-      self.signup_screen_banner
+      # self.logo_no_animation
+      # self.signup_screen_banner
       puts""
       puts "                        "+"         Name         ".colorize(:background=>:red)
         name=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true)
@@ -301,8 +301,8 @@
 
     def self.full_address
 
-      self.logo_no_animation
-      self.signup_screen_banner
+      # self.logo_no_animation
+      # self.signup_screen_banner
       puts""
       puts "                        "+"        Type your full address       ".colorize(:background=>:red)
         full_address=@@prompt.ask("                        "+" ? ".colorize(:color=>:red,:background=>:white),required: true)

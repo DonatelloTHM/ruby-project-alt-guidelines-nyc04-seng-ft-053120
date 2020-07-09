@@ -39,7 +39,17 @@ class Item < ActiveRecord::Base
                 self.item_table(update_quantity,new_quantity)
                 self.check_if_correct(user)
                 update_quantity.save
-                Transaction.create(user_id:user.id,status:"Added",item_id:update_quantity.id,quantity:new_quantity,kind:"Donation")
+
+                # Transaction.create(user_id:user.id,status:"Added",item_id:update_quantity.id,quantity:new_quantity,kind:"Donation")
+
+                # modified Transaction class to have donor and requester ids
+                Transaction.create(
+                    donor_id: user.id,
+                    status: "Added",
+                    item_id: update_quantity.id,
+                    quantity: new_quantity,
+                    kind: "Donation"
+                )
                 self.succesful_donation(user)
 
             else
@@ -60,7 +70,17 @@ class Item < ActiveRecord::Base
         self.item_table(item)
         self.check_if_correct(user)
         item.save
-        Transaction.create(user_id:user.id,status:"Added",item_id:item.id,quantity:item.quantity,kind:"Donation")
+        # Transaction.create(user_id:user.id,status:"Added",item_id:item.id,quantity:item.quantity,kind:"Donation")
+
+        # modified Transaction class to have donor and requester ids
+        Transaction.create(
+            donor_id: user.id,
+            status: "Added",
+            item_id: item.id,
+            quantity: item.quantity,
+            kind: "Donation"
+        )
+        binding.pry
         self.succesful_donation(user)
     end
     
@@ -216,18 +236,30 @@ class Item < ActiveRecord::Base
             item.quantity = prompt_attributes[:quantity]
             item.description = prompt_attributes[:description]
             item.save
+
+            # transaction = Transaction.create(
+            #     user_id: user.id,
+            #     status: "New",
+            #     kind:"Request",
+            #     item_id: item.id,
+            #     quantity: item.quantity
+            # )
+
+            # modified Transaction class to have donor and requester ids
             transaction = Transaction.create(
-                user_id: user.id,
+                requester_id: user.id,
                 status: "New",
-                kind:"Request",
                 item_id: item.id,
-                quantity: item.quantity
+                quantity: item.quantity,
+                kind: "Request"
             )
 
-            user.transactions.push(transaction)
-            item.transactions.push(transaction)
+            binding.pry
+            # user.transactions.push(transaction)
+            # item.transactions.push(transaction)
 
         else
+            binding.pry
             # item found
             # TO ADD: user option to modify existing request if created by user
             puts "Found Matching Request"
@@ -248,8 +280,13 @@ class Item < ActiveRecord::Base
 
         # get_donated_transactions = Transaction.where(status:"Added", kind:"Donation")
 
+        # available_donated_transactions = Transaction.where(
+        #     'user_id != ? AND status = ? AND kind = ?', 
+        #     user.id, "Added", "Donation"
+        # )
+
         available_donated_transactions = Transaction.where(
-            'user_id != ? AND status = ? AND kind = ?', 
+            'donor_id != ? AND  status = ? AND kind = ?', 
             user.id, "Added", "Donation"
         )
 
@@ -272,7 +309,7 @@ class Item < ActiveRecord::Base
         selected_item = Item.find_by(name:available_selection)
 
         matching_donations = Transaction.where(item_id:selected_item.id, status:"Added", kind:"Donation").reject{ |transaction|
-            transaction.user_id == user.id
+            transaction.donor_id == user.id
         }
 
         self.render_items_matched(matching_donations)
