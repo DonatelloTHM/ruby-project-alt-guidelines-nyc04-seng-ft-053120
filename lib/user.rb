@@ -722,7 +722,7 @@ class User < ActiveRecord::Base
             puts"                             THERE ARE NO DONATIONS TO SHOW                            ".colorize(:background=>:blue)
             puts"                                                                                       ".colorize(:background=>:blue)
             puts"                                                                                       ".colorize(:background=>:blue)
-        
+            puts""
         else
             table_array=[]
         i=1
@@ -738,7 +738,7 @@ class User < ActiveRecord::Base
     puts""
         puts"            Choose your window?            ".colorize(:red)
         @@prompt.select("",active_color: :green) do |w|
-            w.choice "          Go back", -> {self.donator_menu}
+            w.choice "          Go back", -> {self.view_donations}
             w.choice "          Donator Menu", -> {self.donator_menu}
             w.choice "          Main menu",->{User.user_menu(self)}
         end
