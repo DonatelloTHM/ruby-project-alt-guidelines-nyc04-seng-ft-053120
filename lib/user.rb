@@ -112,11 +112,7 @@ class User < ActiveRecord::Base
 
         puts""
 
-<<<<<<< HEAD
-        item_attributes[:category] = @@prompt.select("Category?", ["Others","Health","Tools","Electronics","Clothing","Furniture","Household"])
-=======
         item_attributes[:category] = @@prompt.select("Category?", @@category_array)
->>>>>>> d46cf907045dc562c732e52480c0cb12577923a3
         puts""
 
         item_attributes[:description] = @@prompt.ask("Description?")
