@@ -6,6 +6,17 @@ class Item < ActiveRecord::Base
 
     @@prompt=TTY::Prompt.new
     @@ascii=Artii::Base.new :font => 'slant'
+    @@category_array = [
+        "Others",
+        "Cars",
+        "Books",
+        "Health",
+        "Tools",
+        "Electronics",
+        "Clothing",
+        "Appliances",
+        "Furniture"
+    ]
 
     def self.add_item(user)
         puts""
@@ -66,7 +77,7 @@ class Item < ActiveRecord::Base
         # end
         item=self.new
         item.name=name
-        item.category=@@prompt.select("         Choose the category?           ".colorize(:background=>:cyan), ["Others","Health","Tools","Electronics","Clothing","Furniture","Household"])
+        item.category=@@prompt.select("         Choose the category?           ".colorize(:background=>:cyan), @@category_array)
         puts""
         item.description=@@prompt.ask("        Write a short description       ".colorize(:background=>:blue),required: true)
         item.quantity=self.check_quantity
