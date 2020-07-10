@@ -640,9 +640,6 @@ class User < ActiveRecord::Base
             puts"                                                                                       ".colorize(:background=>:blue)
             puts"                                                                                       ".colorize(:background=>:blue)
             puts""
-            puts"    --------------------------------------------------------------------------"
-            puts"      #{Interface.affirmation_message}".colorize(:light_green)
-            puts"    --------------------------------------------------------------------------"
         else
             table_array=[]
         i=1
