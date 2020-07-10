@@ -1,16 +1,7 @@
 class Interface
 
     @@prompt=TTY::Prompt.new
-    @@test_mode = true
-<<<<<<< HEAD
-    
-    # def self.quit
-    #     puts "QUITTING ..."
-    #     exit(true)
-    # end
-=======
-   
->>>>>>> 2d53b70b3449717457b6f422bf1c0d017ae26fc1
+    @@test_mode = false
 
     # helper method for displaying and selecting one transaction from an array
     # options = {:first_name => "Justin", :last_name => "Weiss"}
@@ -66,16 +57,6 @@ class Interface
 
 
 #---------------------------------INTERFACE FLOW--------------------------
-
-
-    # def self.affirmation_message
-    #     url = "https://www.affirmations.dev"
-    #     uri = URI.parse(url)
-    #     response = Net::HTTP.get_response(uri)
-    #     response.body
-    #     affirmations=JSON.parse(response.body)
-    #     affirmations["affirmation"]
-    # end
 
     def self.first_menu
         Interface.logo 
