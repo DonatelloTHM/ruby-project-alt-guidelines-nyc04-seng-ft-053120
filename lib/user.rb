@@ -25,12 +25,17 @@ class User < ActiveRecord::Base
     end
 
     def select_active_request_transaction
+
         transactions = Transaction.where(
             'requester_id = ? AND status != ? AND status != ?', 
             self.id, "Closed", "Cancelled"
         )
 
-        transaction = Interface.select_one_transaction_from_array(transaction_array: transactions)
+        transaction = Interface.select_one_transaction_from_array(
+            prompt_text: "SELECT A REQUEST",
+            transaction_array: transactions
+        )
+
         return transaction
     end
 
@@ -45,54 +50,190 @@ class User < ActiveRecord::Base
         new_request_choice[:name] = "Create a new request"
         new_request_choice[:value] = "new" # used for prompt select
 
-        transaction = Interface.select_one_transaction_from_array(transaction_array: transactions, choice: new_request_choice)
+        transaction = Interface.select_one_transaction_from_array(
+            prompt_text: "SELECT AN AVAILABE DONATION or MAKE A NEW REQUEST",
+            transaction_array: transactions, 
+            choice: new_request_choice
+        )
         return transaction
     end
 
+    def prompt_attributes
+
+        item_attributes = Hash.new
+
+        item_attributes[:name] = @@prompt.ask("Name?")
+
+        #check if matching request name exists for user
+        # binding.pry
+
+        possible_matching_requests = self.requests.select do |request_transaction|
+            request_transaction.status != "Cancelled" && request_transaction.item.name.match?(/#{item_attributes[:name]}/i)
+        end
+        # binding.pry
+
+        if (possible_matching_requests.length > 0)
+
+            puts "\nFOUND POSSIBLE MATCHING OPEN REQUEST(S)\n"
+
+            Transaction.render_table(possible_matching_requests)
+
+            answer = @@prompt.select("??", ["MODIFY A REQUEST", "CREATE NEW REQUEST", "CONTINUE WITH THIS REQUEST"])
+
+            if (answer != "CONTINUE WITH THIS REQUEST")
+                return answer
+                # selected_transaction = user.select_active_request_transaction
+                # user.request(type: "modify", input_transaction: selected_transaction)
+            else #
+                puts "CONTINUING WITH THIS REQUEST"
+            end
+        end
+
+        puts""
+
+        item_attributes[:category] = @@prompt.select("Category?", ["Health","Tools","Electronics","Clothing"])
+        puts""
+
+        item_attributes[:description] = @@prompt.ask("Description?")
+        puts""
+
+        quantity = @@prompt.ask("Quantity?").to_i
+        
+        loop do
+            if(quantity>0)
+                break
+            else
+                puts""
+                puts "          Wrong input, only numbers above zero are accepted".red
+                puts "                              TRY AGAIN"
+                puts""
+                quantity = @@prompt.ask("          What's the quantity?          ".colorize(:background=>:blue)).to_i
+            end
+            break if quantity>0
+        end
+
+        item_attributes[:quantity] = quantity
+        return item_attributes
+    end
+
     # request type = "create" or "cancel" or "modify"
-    def request(type)
+    def request(type:, input_transaction: false)
 
         case type
 
             when "create"
                 
-                selected_transaction = select_active_donatation_transaction
+                self.requests.reload
+                selected_transaction = input_transaction ? input_transaction : select_active_donatation_transaction
 
                 if selected_transaction == "new"
                     # created a new donation
-                    new_transaction = Item.create_request(self)
-                    new_transaction.display
-                else
-                    # selected an available donation
-                    if selected_transaction == nil
-                        self.request("create")
-                    else
-                        selected_transaction.display
-                        confirm_reserve_donation = @@prompt.select("RESERVE DONATION?  ", ["Yes", "No", "Back"])
+                    # new_transaction = Item.create_request(self)
+                    # new_transaction.display
 
-                        if confirm_reserve_donation == "Yes"
-                            selected_transaction.status = "Reserved"
-                            selected_transaction.requester_id = self.id
-                            selected_transaction.save
-                            selected_transaction.display
-                            @@prompt.keypress("Press any key to continue")
-                            self.requester_menu
-                        elsif confirm_reserve_donation == "No"
-                            self.request("create")
-                        else
-                            self.requester_menu
+                    # prompt user for item attributes
+                    item_attributes = prompt_attributes
+
+                    if item_attributes == "MODIFY A REQUEST"
+                        self.request(type: "modify")
+                        return
+                    elsif item_attributes == "CREATE NEW REQUEST"
+                        self.request(type: "create")
+                        return
+                    end
+
+                    # return item if found with name, quantity & category match, otherwise create new item
+                    item = Item.find_or_initialize_by(
+                        name: item_attributes[:name], 
+                        category: item_attributes[:category],
+                        quantity: item_attributes[:quantity]
+                    )
+
+                    if item.id != nil
+                        matching_donation = Transaction.where(
+                            item_id: item.id
+                        ).take
+
+                        if matching_donation != nil && matching_donation.kind == "Donation" && matching_donation.kind == "Donation" && matching_donation.status == "Added"
+                            puts "Found Matching Donation"
+
+                            # return matching_donation
+                            matching_donation.display
+                            confirm_reserve_donation = @@prompt.select("RESERVE DONATION?  ", ["Yes", "No", "Back"])
+
+                            if confirm_reserve_donation == "Yes"
+                                matching_donation.status = "Reserved"
+                                matching_donation.requester_id = self.id
+                                matching_donation.save
+                                matching_donation.display
+                                @@prompt.keypress("Press any key to continue")
+                                self.requester_menu
+                            elsif confirm_reserve_donation == "No"
+                                self.request(type: "create")
+                            else
+                                self.requester_menu
+                            end
                         end
                     end
+
+                    # item not found; creating new item
+                    puts "Creating Request"
+                    item.quantity = item_attributes[:quantity]
+                    item.description = item_attributes[:description]
+                    item.save
+
+                    # binding.pry
+
+                    # modified Transaction class to have donor and requester ids
+                    transaction = Transaction.create(
+                        requester_id: self.id,
+                        status: "Open",
+                        item_id: item.id,
+                        quantity: item.quantity,
+                        kind: "Request"
+                    )
+
+                    # binding.pry
+
+                    # return transaction
+                    self.requester_menu
+
+                elsif selected_transaction == nil
+                    @@prompt.keypress("\n\nNO REQUESTS CREATED\nPress any key to continue")
+                    self.requester_menu
+                else
+                    selected_transaction.display
+                    confirm_reserve_donation = @@prompt.select("RESERVE DONATION?  ", ["Yes", "No", "Back"])
+
+                    if confirm_reserve_donation == "Yes"
+                        selected_transaction.status = "Reserved"
+                        selected_transaction.requester_id = self.id
+                        selected_transaction.save
+                        selected_transaction.display
+                        @@prompt.keypress("Press any key to continue")
+                        self.requester_menu
+                    elsif confirm_reserve_donation == "No"
+                        self.request(type: "create")
+                    else
+                        self.requester_menu
+                    end
+                    # end
                 end
 
             when "cancel"
 
-                selected_transaction = select_active_request_transaction
+                # binding.pry
+
+                # selected_transaction = select_active_request_transaction
+                selected_transaction = input_transaction ? input_transaction : select_active_request_transaction
 
                 if selected_transaction == nil
-                    puts "NO TRANSACTIONS TO CANCEL"
+
+                    puts "\nNO REQUESTS TO CANCEL\n"
+
                 else
-                    puts "CANCELLING REQUEST"
+                    puts "\nCANCELLING REQUEST\n"
+
                     selected_transaction.display
 
                     confirm_cancel_transaction = @@prompt.select("CONFIRM CANCEL?  ", ["Yes", "No", "Back"])
@@ -104,7 +245,7 @@ class User < ActiveRecord::Base
                         @@prompt.keypress("Press any key to continue")
                         self.requester_menu
                     elsif confirm_cancel_transaction == "No"
-                        self.request("cancel")
+                        self.request(type: "cancel")
                     else
                         self.requester_menu
                     end
@@ -112,13 +253,14 @@ class User < ActiveRecord::Base
 
             when "modify"
 
-                selected_transaction = select_active_request_transaction
+                # selected_transaction = select_active_request_transaction
+                selected_transaction = input_transaction ? input_transaction : select_active_request_transaction
 
                 if selected_transaction == nil
-                    puts "NO TRANSACTIONS TO MODIFY"
+                    puts "\nNO REQUESTS TO MODIFY\n"
                 else
 
-                    puts "MODIFYING REQUEST"
+                    puts "\nMODIFYING REQUEST\n"
                     selected_transaction.display
 
                     modified_transaction = Transaction.modify_transaction(selected_transaction)
@@ -134,14 +276,14 @@ class User < ActiveRecord::Base
                         @@prompt.keypress("Press any key to continue")
                         self.requester_menu
                     elsif confirm_modify_transaction == "No"
-                        self.request("modify")
+                        self.request(type: "modify")
                     else
                         self.requester_menu
                     end
                 end
 
             else
-                puts "*** UNKNOWN REQUEST TYPE: #{type}"
+                puts "\n*** UNKNOWN REQUEST TYPE: #{type}\n"
                 return nil
         end
 
@@ -169,9 +311,9 @@ class User < ActiveRecord::Base
         puts "          Requester's Main Menu          ".colorize(:background=>:red)
         @@prompt.select("",active_color: :green) do |m|
             m.enum "."
-            m.choice "          Make a Request", -> {self.request("create")}  #2
-            m.choice "          Cancel a Request", -> {self.request("cancel")} #3
-            m.choice "          Modify a Request", -> {self.request("modify")}#4
+            m.choice "          Make a Request", -> {self.request(type: "create")}  #2
+            m.choice "          Cancel a Request", -> {self.request(type: "cancel")} #3
+            m.choice "          Modify a Request", -> {self.request(type: "modify")}#4
             m.choice "          View all my Requests", -> {self.view_requests}
             m.choice "          Previous menu",-> {self.class.user_menu(self)}
             m.choice "          Quit".red, ->{Interface.quit(self)}

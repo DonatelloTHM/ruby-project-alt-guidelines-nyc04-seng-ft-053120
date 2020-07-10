@@ -5,6 +5,7 @@ gem "activerecord", '~> 5.2'
 gem "sinatra-activerecord"
 gem "sqlite3", '~> 1.3.6'
 gem "pry"
+gem 'pry-stack_explorer', '~> 0.5.0'
 gem "require_all"
 gem "faker"
 gem 'tty-prompt'

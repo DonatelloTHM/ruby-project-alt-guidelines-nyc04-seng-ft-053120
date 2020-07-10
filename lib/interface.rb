@@ -1,9 +1,14 @@
 class Interface
 
     @@prompt=TTY::Prompt.new
+<<<<<<< HEAD
     @@test_mode = true
    
 
+=======
+    @@test_mode = false
+    
+>>>>>>> fdca80017d16212b0eafeb6a10fdeaeb1fa5fce1
     # def self.quit
     #     puts "QUITTING ..."
     #     exit(true)
@@ -12,16 +17,26 @@ class Interface
     # helper method for displaying and selecting one transaction from an array
     # options = {:first_name => "Justin", :last_name => "Weiss"}
 
-    def self.select_one_transaction_from_array(transaction_array:, per_page: 10, choice: false)
+    def self.select_one_transaction_from_array(
+        prompt_text: "SELECT AN ITEM",
+        transaction_array:, 
+        per_page: 10, 
+        choice: false, 
+        cancel: true
+      )
+
+        # binding.pry
 
         choices_array = []
-        transaction_array.each do |transaction|
-            hash = Hash.new
-            choice_name_string = "STATUS: #{transaction.status} | QTY: #{transaction.item.quantity} | CATEGORY: #{transaction.item.category} | NAME: #{transaction.item.name}"
-            hash[:name] = choice_name_string # used for prompt select
-            hash[:value] = transaction # used for prompt select
 
-            choices_array.push(hash)
+        puts "\n"
+        transaction_array.each do |transaction|
+          hash = Hash.new
+          choice_name_string = "#{transaction.kind} | STATUS: #{transaction.status} | QTY: #{transaction.item.quantity} | CATEGORY: #{transaction.item.category} | NAME: #{transaction.item.name}"
+          hash[:name] = choice_name_string # used for prompt select
+          hash[:value] = transaction # used for prompt select
+
+          choices_array.push(hash)
         end
 
         # if transaction is actually a predefined choice, just push into choice array
@@ -29,13 +44,24 @@ class Interface
             choices_array.push(choice)
         end
 
+        # add a cancel option if enabled and at least one choice so far
+        if cancel && choices_array.length > 0
+            choices_array.push({name: 'Go Back', value: nil})
+        end
+
+        if choices_array.length == 0
+          return nil
+        end
+
         selected_transaction = nil
 
-        selected_transaction = @@prompt.select("CHOOSE AN ITEM") do |menu|
+        selected_transaction = @@prompt.select(prompt_text) do |menu|
             menu.per_page per_page
             # menu.help '(Wiggle thy finger up/down and left/right to see more)'
             menu.choices choices_array
         end
+
+        # binding.pry
 
         return selected_transaction
     end
@@ -96,9 +122,11 @@ class Interface
         puts "                     "+"      What's your Password?     ".colorize(:background=>:red)
             password = @@prompt.mask("                     "+" # ".colorize(:color=>:red,:background=>:white),required: true)
             if password == user.password
-                self.animation(2)
-                self.welcome_user_animation(user)
-                User.user_menu(user)
+              if !@@test_mode
+                  self.animation(2)
+                  self.welcome_user_animation(user)
+              end
+              User.user_menu(user)
             else    
                 self.logo_no_animation
                 self.login_screen_banner
@@ -153,8 +181,12 @@ class Interface
         name=self.name_of_user
         full_address=self.full_address
         new_user=User.create(username:username,password:password,name:name,address:full_address)
-        self.animation(1)
-        self.welcome_user_animation(new_user)
+
+        if !@@test_mode
+            self.animation(1)
+            self.welcome_user_animation(new_user)
+        end
+
         User.user_menu(new_user)
     end
 
