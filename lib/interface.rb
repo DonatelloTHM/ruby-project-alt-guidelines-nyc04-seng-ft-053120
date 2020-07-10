@@ -1,8 +1,9 @@
- class Interface
+class Interface
 
     @@prompt=TTY::Prompt.new
     @@test_mode = true
-    
+   
+
     # def self.quit
     #     puts "QUITTING ..."
     #     exit(true)
@@ -41,12 +42,20 @@
 
 
 #---------------------------------INTERFACE FLOW--------------------------
-# login_register=prompt.select("".colorize(:color => :black, :background => :light_green), ["               Login                ","              Register             ","               Quit               ".colorize(:red)])
 
 
+    def self.affirmation_message
+        url = "https://www.affirmations.dev"
+        uri = URI.parse(url)
+        response = Net::HTTP.get_response(uri)
+        response.body
+        affirmations=JSON.parse(response.body)
+        affirmations["affirmation"]
+    end
 
     def self.first_menu
-        Interface.logo
+        self.affirmation_message
+        Interface.logo 
         puts "          Select your option         ".colorize(:color => :black, :background => :light_green)+"                          ".colorize(:background => :cyan)+"          ".colorize(:background => :light_blue)
         puts""
         login_register=@@prompt.select("".colorize(:color => :black, :background => :light_green), ["               Login                ","              Register             ","               Quit               ".colorize(:red)])
