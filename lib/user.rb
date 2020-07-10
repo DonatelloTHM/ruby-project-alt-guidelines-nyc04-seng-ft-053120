@@ -91,7 +91,7 @@ class User < ActiveRecord::Base
 
         puts""
 
-        item_attributes[:category] = @@prompt.select("Category?", ["Health","Tools","Electronics","Clothing"])
+        item_attributes[:category] = @@prompt.select("Category?", ["Others","Health","Tools","Electronics","Clothing","Furniture","Household"])
         puts""
 
         item_attributes[:description] = @@prompt.ask("Description?")

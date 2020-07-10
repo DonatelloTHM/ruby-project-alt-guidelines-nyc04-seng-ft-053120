@@ -66,7 +66,7 @@ class Item < ActiveRecord::Base
         # end
         item=self.new
         item.name=name
-        item.category=@@prompt.select("         Choose the category?           ".colorize(:background=>:cyan), ["Health","Tools","Electronics","Clothing"])
+        item.category=@@prompt.select("         Choose the category?           ".colorize(:background=>:cyan), ["Others","Health","Tools","Electronics","Clothing","Furniture","Household"])
         puts""
         item.description=@@prompt.ask("        Write a short description       ".colorize(:background=>:blue),required: true)
         item.quantity=self.check_quantity
