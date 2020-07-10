@@ -6,13 +6,15 @@ class User < ActiveRecord::Base
     @@prompt=TTY::Prompt.new
 
     @@category_array = [
+        "Others",
         "Cars",
         "Books",
         "Health",
         "Tools",
         "Electronics",
         "Clothing",
-        "Appliances"
+        "Appliances",
+        "Furniture"
     ];
 
     def self.user_menu(user)
