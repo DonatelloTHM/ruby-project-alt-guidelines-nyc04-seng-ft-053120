@@ -5,6 +5,16 @@ class Transaction < ActiveRecord::Base
 
     @@prompt=TTY::Prompt.new
 
+    @@category_array = [
+        "Cars",
+        "Books",
+        "Health",
+        "Tools",
+        "Electronics",
+        "Clothing",
+        "Appliances"
+    ];
+    
     def display
         Transaction.render_table([self])
     end
@@ -57,7 +67,7 @@ class Transaction < ActiveRecord::Base
         puts table.render(
             :unicode, 
             alignments: [:left, :left, :left, :left, :center, :left, :left, :left], 
-            column_widths: [3, 5, 10, 10, 5, 10, 15, 20], 
+            column_widths: [3, 5, 10, 10, 5, 15, 15, 25], 
             padding: [0,1,0,1]
         )
     end
@@ -65,7 +75,11 @@ class Transaction < ActiveRecord::Base
     def self.modify_transaction(transaction)
         transaction.item.description = @@prompt.ask("Description?", default: transaction.item.description)
         transaction.item.quantity = @@prompt.ask("Quantity?", default: transaction.item.quantity)
-        transaction.item.category = @@prompt.ask("Category?", default: transaction.item.category)
+        # transaction.item.category = @@prompt.select("Category?", @@category_array)
+        transaction.item.category =@@prompt.select("Category?", active_color: :green, per_page: 20) do |menu|
+            menu.help '(up/down)'
+            menu.choices  @@category_array
+        end
         return transaction
     end
 
