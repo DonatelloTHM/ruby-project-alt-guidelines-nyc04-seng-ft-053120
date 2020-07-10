@@ -170,7 +170,7 @@
 
         if !@@test_mode
             self.animation(1)
-            self.welcome_user_animation(user)
+            self.welcome_user_animation(new_user)
         end
 
         User.user_menu(new_user)
