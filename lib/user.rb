@@ -42,7 +42,7 @@ class User < ActiveRecord::Base
         )
 
         transaction = Interface.select_one_transaction_from_array(
-            prompt_text: "SELECT A REQUEST",
+            prompt_text: "\nSELECT A REQUEST\n",
             transaction_array: transactions
         )
 
@@ -57,7 +57,7 @@ class User < ActiveRecord::Base
         )
 
         transaction = Interface.select_one_transaction_from_array(
-            prompt_text: "SELECT A REQUEST",
+            prompt_text: "\nSELECT A REQUEST\n",
             transaction_array: transactions
         )
 
@@ -274,6 +274,7 @@ class User < ActiveRecord::Base
                         active_request.status = "Cancelled"
                         active_request.save
 
+                        system("clear")
                         puts "\nREQUEST CANCELLED\n"
                         active_request.display
 
@@ -294,11 +295,14 @@ class User < ActiveRecord::Base
                 if active_request == nil
                     puts "\nNO REQUESTS TO MODIFY\n"
                 else
+                    system("clear")
                     puts "\nMODIFYING REQUEST\n"
                     active_request.display
 
                     modified_transaction = Transaction.modify_transaction(active_request)
 
+                    system("clear")
+                    puts "\nCONFIRMING CHANGES\n"
                     modified_transaction.display
 
                     confirm_modify_transaction = @@prompt.select("CONFIRM CHANGES?  ", ["Yes", "No", "Back"])
@@ -308,6 +312,7 @@ class User < ActiveRecord::Base
                         modified_transaction.item.save
                         modified_transaction.save
 
+                        system("clear")
                         puts "\nREQUEST MODIFIED\n"
                         modified_transaction.display
                         @@prompt.keypress("Press any key to continue")
@@ -323,10 +328,12 @@ class User < ActiveRecord::Base
 
             when "complete"
 
+                system("clear")
                 reserved_donation = input_transaction ? input_transaction : select_reserved_transaction
 
                 if reserved_donation == nil
-                    puts "\nNO RESERVED DONATIONS TO COMPLETE\n"
+                    system("clear")
+                    puts "\nNO RESERVED DONATIONS TO COMPLETE\n\n"
                 else
 
                     system("clear")

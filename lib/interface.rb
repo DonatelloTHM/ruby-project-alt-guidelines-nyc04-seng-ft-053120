@@ -9,7 +9,7 @@ class Interface
     def self.select_one_transaction_from_array(
         prompt_text: "SELECT AN ITEM",
         transaction_array:, 
-        per_page: 10, 
+        per_page: 20, 
         choice: false, 
         cancel: true
       )
@@ -35,7 +35,7 @@ class Interface
 
         # add a cancel option if enabled and at least one choice so far
         if cancel && choices_array.length > 0
-            choices_array.push({name: 'Go Back', value: nil})
+            choices_array.unshift({name: 'Go Back', value: nil})
         end
 
         if choices_array.length == 0
@@ -46,7 +46,7 @@ class Interface
 
         selected_transaction = @@prompt.select(prompt_text) do |menu|
             menu.per_page per_page
-            # menu.help '(Wiggle thy finger up/down and left/right to see more)'
+            menu.help '(up/down)'
             menu.choices choices_array
         end
 
