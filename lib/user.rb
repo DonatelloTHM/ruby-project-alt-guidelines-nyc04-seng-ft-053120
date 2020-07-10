@@ -123,6 +123,7 @@ class User < ActiveRecord::Base
 
             when "create"
                 
+                self.requests.reload
                 selected_transaction = input_transaction ? input_transaction : select_active_donatation_transaction
 
                 if selected_transaction == "new"
@@ -132,6 +133,14 @@ class User < ActiveRecord::Base
 
                     # prompt user for item attributes
                     item_attributes = prompt_attributes
+
+                    if item_attributes == "MODIFY A REQUEST"
+                        self.request(type: "modify")
+                        return
+                    elsif item_attributes == "CREATE NEW REQUEST"
+                        self.request(type: "create")
+                        return
+                    end
 
                     # return item if found with name, quantity & category match, otherwise create new item
                     item = Item.find_or_initialize_by(
@@ -147,7 +156,23 @@ class User < ActiveRecord::Base
 
                         if matching_donation != nil && matching_donation.kind == "Donation" && matching_donation.kind == "Donation" && matching_donation.status == "Added"
                             puts "Found Matching Donation"
-                            return matching_donation
+
+                            # return matching_donation
+                            matching_donation.display
+                            confirm_reserve_donation = @@prompt.select("RESERVE DONATION?  ", ["Yes", "No", "Back"])
+
+                            if confirm_reserve_donation == "Yes"
+                                matching_donation.status = "Reserved"
+                                matching_donation.requester_id = self.id
+                                matching_donation.save
+                                matching_donation.display
+                                @@prompt.keypress("Press any key to continue")
+                                self.requester_menu
+                            elsif confirm_reserve_donation == "No"
+                                self.request(type: "create")
+                            else
+                                self.requester_menu
+                            end
                         end
                     end
 
