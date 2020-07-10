@@ -67,7 +67,7 @@ class Transaction < ActiveRecord::Base
         puts table.render(
             :unicode, 
             alignments: [:left, :left, :left, :left, :center, :left, :left, :left], 
-            column_widths: [3, 5, 10, 10, 5, 15, 15, 25], 
+            column_widths: [3, 5, 10, 10, 5, 15, 25, 25], 
             padding: [0,1,0,1]
         )
     end

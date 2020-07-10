@@ -54,8 +54,8 @@ class User < ActiveRecord::Base
     def select_active_request_transaction
 
         transactions = Transaction.where(
-            'requester_id = ? AND status != ? AND status != ? AND status != ?', 
-            self.id, "Closed", "Cancelled", "Completed"
+            'requester_id = ? AND kind = ? AND status != ? AND status != ? AND status != ?', 
+            self.id, "Request", "Closed", "Cancelled", "Completed"
         )
 
         transaction = Interface.select_one_transaction_from_array(
