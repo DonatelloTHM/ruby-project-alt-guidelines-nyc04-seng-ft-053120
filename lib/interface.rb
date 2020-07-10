@@ -1,18 +1,8 @@
 class Interface
 
     @@prompt=TTY::Prompt.new
-<<<<<<< HEAD
     @@test_mode = true
    
-
-=======
-    @@test_mode = false
-    
->>>>>>> fdca80017d16212b0eafeb6a10fdeaeb1fa5fce1
-    # def self.quit
-    #     puts "QUITTING ..."
-    #     exit(true)
-    # end
 
     # helper method for displaying and selecting one transaction from an array
     # options = {:first_name => "Justin", :last_name => "Weiss"}
@@ -70,17 +60,16 @@ class Interface
 #---------------------------------INTERFACE FLOW--------------------------
 
 
-    def self.affirmation_message
-        url = "https://www.affirmations.dev"
-        uri = URI.parse(url)
-        response = Net::HTTP.get_response(uri)
-        response.body
-        affirmations=JSON.parse(response.body)
-        affirmations["affirmation"]
-    end
+    # def self.affirmation_message
+    #     url = "https://www.affirmations.dev"
+    #     uri = URI.parse(url)
+    #     response = Net::HTTP.get_response(uri)
+    #     response.body
+    #     affirmations=JSON.parse(response.body)
+    #     affirmations["affirmation"]
+    # end
 
     def self.first_menu
-        self.affirmation_message
         Interface.logo 
         puts "          Select your option         ".colorize(:color => :black, :background => :light_green)+"                          ".colorize(:background => :cyan)+"          ".colorize(:background => :light_blue)
         puts""
