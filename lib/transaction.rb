@@ -69,6 +69,11 @@ class Transaction < ActiveRecord::Base
         return transaction
     end
 
+    def self.complete_transaction(transaction)
+        transaction.status = "Completed"
+        return transaction
+    end
+
     def self.list_all
         tp Transaction.all
     end

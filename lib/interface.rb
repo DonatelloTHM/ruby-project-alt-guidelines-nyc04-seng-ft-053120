@@ -1,7 +1,7 @@
  class Interface
 
     @@prompt=TTY::Prompt.new
-    @@test_mode = false
+    @@test_mode = true
     
     # def self.quit
     #     puts "QUITTING ..."
