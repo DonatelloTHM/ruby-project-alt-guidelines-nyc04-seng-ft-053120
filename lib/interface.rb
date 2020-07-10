@@ -1,7 +1,7 @@
 class Interface
 
     @@prompt=TTY::Prompt.new
-    @@test_mode = true
+    @@test_mode = false
    
 
     # helper method for displaying and selecting one transaction from an array
